@@ -107,14 +107,18 @@
 		data() {
 			return {
 				username: "",
-				error: "",
-				registered: false
+				error: ""
 			};
 		},
 
 		computed: {
 			loggedIn() {
 				return !!this.$store.state.siteInfo.cert_user_id;
+			}
+		},
+		asyncComputed: {
+			async registered() {
+				return this.loggedIn && await Users.isRegistered();
 			}
 		},
 
@@ -124,6 +128,12 @@
 					// Sign up
 					let certUserId = this.$store.state.siteInfo.cert_user_id;
 					this.username = certUserId.split("@")[0];
+				}
+			},
+			registered(newValue) {
+				if(newValue) {
+					// Registered user
+					this.$router.navigate("play");
 				}
 			}
 		},

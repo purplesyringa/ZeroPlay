@@ -59,7 +59,7 @@
 	import {zeroPage} from "@/zero";
 
 	export default {
-		name: "play",
+		name: "play-with-a-friend",
 		data() {
 			return {
 				username: "",

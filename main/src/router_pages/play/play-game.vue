@@ -90,7 +90,7 @@
 
 <script type="text/javascript">
 	export default {
-		name: "play",
+		name: "play-game",
 
 		computed: {
 			game() {

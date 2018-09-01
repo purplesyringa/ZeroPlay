@@ -2,6 +2,8 @@
 	<div class="root">
 		<!-- Game list -->
 		<div class="groups">
+			<a @click="$router.navigate('play')" class="back">Choose another game</a>
+
 			<div class="group" @click="$router.navigate(`play/${game}/with-a-friend`)">
 				<img src="@/assets/with-a-friend.png" />
 				<h2>Friend</h2>
@@ -33,6 +35,19 @@
 		top: 50%
 		transform: translateY(-50%)
 		text-align: center
+
+		.back
+			font-size: 16px
+			color: #FFF
+			font-size: 20px
+			text-decoration: underline
+			text-align: center
+			cursor: pointer
+
+			position: absolute
+			left: 0
+			width: 100%
+			margin-top: -32px
 
 		.group
 			display: inline-block

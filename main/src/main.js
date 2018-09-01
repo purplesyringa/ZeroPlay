@@ -24,7 +24,8 @@ var app = new Vue({
 	}
 });
 
-import {route, zeroPage} from "./route.js";
+import {route} from "./route.js";
+import {zeroPage} from "./zero";
 route(app);
 
 Vue.prototype.$zeroPage = zeroPage;

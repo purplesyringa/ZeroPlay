@@ -1,5 +1,6 @@
 <template>
 	<div class="root">
+		<!-- Header -->
 		<h1>
 			<span class="zero">Zer0</span>
 			<span class="p">P</span>
@@ -10,6 +11,20 @@
 		<h2>
 			Game Center
 		</h2>
+
+		<!-- Not logged in ZeroNet -->
+		<template v-if="!loggedIn">
+			<button @click="signUp">
+				Sign up/in
+			</button>
+		</template>
+		<!-- Logged to ZeroNet, but not registered yet -->
+		<template v-else-if="!registered">
+			<input v-model="username" placeholder="Choose username">
+			<button @click="register">Register</button>
+			<button @click="signUp">Choose another ID</button>
+			<div class="error">{{error}}</div>
+		</template>
 	</div>
 </template>
 
@@ -21,9 +36,10 @@
 		top: 50%
 		transform: translateY(-50%)
 
+		text-align: center
+
 	h1
 		font-weight: bold
-		text-align: center
 		font-size: 0
 
 		span
@@ -43,14 +59,94 @@
 
 	h2
 		font-weight: normal
-		text-align: center
 		font-size: 32px
 		line-height: 0
 		color: #B6B
+		margin-bottom: 64px
+
+
+	input
+		display: inline-block
+		padding: 8px 16px 10px
+
+		border: none
+		background-color: #222
+		color: #FFF
+
+		transition: all 0.3s
+
+	button
+		display: inline-block
+		padding: 8px 16px
+
+		border: none
+		background-color: #222
+		color: #FFF
+		border-bottom: 2px solid #DB6
+
+		cursor: pointer
+
+		transition: all 0.3s
+
+		&:hover
+			background-color: #555
+
+	.error
+		color: #F66
+		font-size: 16px
+		height: 16px
+		margin-top: 16px
 </style>
 
 <script type="text/javascript">
+	import {zeroAuth, zeroPage} from "@/zero";
+	import Users from "@/libs/users";
+
 	export default {
-		name: "home"
+		name: "home",
+		data() {
+			return {
+				username: "",
+				error: "",
+				registered: false
+			};
+		},
+
+		computed: {
+			loggedIn() {
+				return !!this.$store.state.siteInfo.cert_user_id;
+			}
+		},
+
+		watch: {
+			"$store.state.siteInfo.cert_user_id"(newValue, oldValue) {
+				if(!oldValue && newValue) {
+					// Sign up
+					let certUserId = this.$store.state.siteInfo.cert_user_id;
+					this.username = certUserId.split("@")[0];
+				}
+			}
+		},
+
+		methods: {
+			signUp() {
+				// Not logged in yet
+				// We're not using ZeroAuth.requestAuth() because it won't
+				// work for re-login
+				zeroPage.cmd("certSelect", {
+					accepted_domains: zeroAuth.acceptedDomains
+				});
+			},
+			async register() {
+				// Check that a username is passed
+				if(!this.username) {
+					this.error = "Please, choose a username";
+					return;
+				}
+				this.error = "";
+
+				await Users.register(this.username);
+			}
+		}
 	};
 </script>

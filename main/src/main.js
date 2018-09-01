@@ -45,10 +45,10 @@ Vue.prototype.$zeroPage = zeroPage;
 
 (async function() {
 	const siteInfo = await zeroPage.getSiteInfo();
-	app.$eventBus.$emit("setSiteInfo", siteInfo);
 	store.commit("setSiteInfo", siteInfo);
+	app.$eventBus.$emit("setSiteInfo", siteInfo);
 })();
 zeroPage.on("setSiteInfo", msg => {
-	app.$eventBus.$emit("setSiteInfo", msg.params);
 	store.commit("setSiteInfo", msg.params);
+	app.$eventBus.$emit("setSiteInfo", msg.params);
 });

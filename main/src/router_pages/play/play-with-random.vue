@@ -2,10 +2,10 @@
 	<div class="root">
 		<!-- Game list -->
 		<div class="groups">
-			<a @click="$router.navigate('play')" class="back">Choose another game</a>
-
 			<span>Please wait till someone wants to play.</span>
 		</div>
+
+		<a @click="$router.navigate('play')" class="back">&lt; Choose another game</a>
 	</div>
 </template>
 
@@ -17,24 +17,22 @@
 
 		background-color: #223
 
+	.back
+		color: #88D
+		font-size: 20px
+		text-decoration: none
+		cursor: pointer
+
+		position: absolute
+		left: 16px
+		top: 16px
+
 	.groups
 		width: 100%
 		position: absolute
 		top: 50%
 		transform: translateY(-50%)
 		text-align: center
-
-		.back
-			color: #FFF
-			font-size: 20px
-			text-decoration: underline
-			text-align: center
-			cursor: pointer
-
-			position: absolute
-			left: 0
-			width: 100%
-			margin-top: -64px
 
 		span
 			color: #FFF

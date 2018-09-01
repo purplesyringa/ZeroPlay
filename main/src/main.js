@@ -10,7 +10,7 @@ Vue.component("icon", Icon);
 
 Vue.prototype.$eventBus = new Vue();
 
-import Vuex, {mapState} from "vuex";
+import Vuex from "vuex";
 Vue.use(Vuex);
 const store = new Vuex.Store({
 	state: {
@@ -24,10 +24,7 @@ const store = new Vuex.Store({
 		setSiteInfo(state, siteInfo) {
 			state.siteInfo = siteInfo;
 		}
-	},
-	computed: mapState([
-		"siteInfo"
-	])
+	}
 });
 
 import root from "./vue_components/root.vue";

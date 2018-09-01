@@ -28,6 +28,11 @@ module.exports = (entry, plugins, defs, library, outputPath) => {
 			filename: "[name].js",
 			library
 		},
+		resolve: {
+			alias: {
+				"@": path.resolve(__dirname, "src")
+			}
+		},
 		node: {
 			fs: "empty",
 			module: "empty",

@@ -96,7 +96,7 @@
 					// The user accepts to play with us
 					console.log("Opponent accepted");
 					playing = true;
-					this.$router.navigate(`play/${this.game}/with-random/${opponentAddress}/${gameId}`);
+					this.$router.navigate(`play/${this.game}/with-random/${opponentAddress}/${gameId}/first`);
 					off();
 					offJoin();
 					clearTimeout(to);
@@ -144,7 +144,7 @@
 				// while we were sending/receiving the messages.
 				console.log("Play");
 				playing = true;
-				this.$router.navigate(`play/${this.game}/with-random/${opponentAddress}/${gameId}`);
+				this.$router.navigate(`play/${this.game}/with-random/${opponentAddress}/${gameId}/second`);
 				off();
 				offJoin();
 				clearTimeout(to);
@@ -181,14 +181,14 @@
 					Game.sendTo(opponentAddress, `with-a-friend/accept-join/${this.game}`, gameId);
 
 					// Start the game
-					this.$router.navigate(`play/${this.game}/with-a-friend/${opponentAddress}/${gameId}`);
+					this.$router.navigate(`play/${this.game}/with-a-friend/${opponentAddress}/${gameId}/first`);
 				});
 
 				// Wait for this message from the opponent
 				const gameId = await Game.waitFrom(opponentAddress, `with-a-friend/accept-join/${this.game}`);
 
 				// The opponent agreed to start the game, so we agree as well
-				this.$router.navigate(`play/${this.game}/with-a-friend/${opponentAddress}/${gameId}`);
+				this.$router.navigate(`play/${this.game}/with-a-friend/${opponentAddress}/${gameId}/second`);
 			}
 		}
 	};

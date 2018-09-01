@@ -106,7 +106,7 @@
 					Game.sendTo(opponentAddress, `with-a-friend/accept-join/${this.game}`, gameId);
 
 					// Start the game
-					this.$router.navigate(`play/${this.game}/with-a-friend/${opponentAddress}/${gameId}`);
+					this.$router.navigate(`play/${this.game}/with-a-friend/${opponentAddress}/${gameId}/first`);
 				});
 
 				// Wait for this message from the opponent
@@ -114,7 +114,7 @@
 				const gameId = await Game.waitFrom(opponentAddress, `with-a-friend/accept-join/${this.game}`);
 
 				// The opponent agreed to start the game, so we agree as well
-				this.$router.navigate(`play/${this.game}/with-a-friend/${opponentAddress}/${gameId}`);
+				this.$router.navigate(`play/${this.game}/with-a-friend/${opponentAddress}/${gameId}/second`);
 			}
 		}
 	};

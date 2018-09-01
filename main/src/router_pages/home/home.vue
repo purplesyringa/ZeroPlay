@@ -130,6 +130,8 @@
 				this.error = "";
 
 				await Users.register(this.username);
+
+				this.$router.navigate("play");
 			}
 		}
 	};

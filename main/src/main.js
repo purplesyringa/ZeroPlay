@@ -1,5 +1,10 @@
 import "./sass/main.sass";
 
+// For ChessBoard
+import jquery from "jquery";
+window.$ = jquery;
+window.jQuery = jquery;
+
 import Vue from "vue/dist/vue.min.js";
 
 import AsyncComputed from "vue-async-computed";

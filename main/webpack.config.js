@@ -65,6 +65,12 @@ module.exports = [
 					to: "./data"
 				}
 			]),
+			new CopyWebpackPlugin([
+				{
+					from: path.resolve(__dirname, "../node_modules/chessboardjs/www/img"),
+					to: "./chessboard-img"
+				}
+			]),
 
 			new BundleAnalyzerPlugin({
 				analyzerPort: 8275

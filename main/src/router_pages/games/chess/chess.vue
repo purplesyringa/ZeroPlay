@@ -3,8 +3,8 @@
 		<div class="container">
 			<div class="user user-left">
 				<div :class="my">
-					<template v-if="my === 'b'">&#9823;</template>
-					<template v-if="my === 'w'">&#9817;</template>
+					<template v-if="my === 'b'">&#9817;</template>
+					<template v-if="my === 'w'">&#9823;</template>
 				</div>
 				<div v-html="myIcon"></div>
 				<h2>{{myUsername}}</h2>
@@ -18,8 +18,8 @@
 				<h2>{{opponentUsername}}</h2>
 				<div v-html="opponentIcon"></div>
 				<div :class="opponent">
-					<template v-if="opponent === 'b'">&#9823;</template>
-					<template v-if="opponent === 'w'">&#9817;</template>
+					<template v-if="opponent === 'b'">&#9817;</template>
+					<template v-if="opponent === 'w'">&#9823;</template>
 				</div>
 			</div>
 

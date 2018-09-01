@@ -65,32 +65,6 @@
 		margin-bottom: 64px
 
 
-	input
-		display: inline-block
-		padding: 8px 16px 10px
-
-		border: none
-		background-color: #222
-		color: #FFF
-
-		transition: all 0.3s
-
-	button
-		display: inline-block
-		padding: 8px 16px
-
-		border: none
-		background-color: #222
-		color: #FFF
-		border-bottom: 2px solid #DB6
-
-		cursor: pointer
-
-		transition: all 0.3s
-
-		&:hover
-			background-color: #555
-
 	.error
 		color: #F66
 		font-size: 16px

@@ -39,13 +39,13 @@ var app = new Vue({
 
 import {route} from "./route.js";
 import {zeroPage} from "./zero";
-route(app);
 
 Vue.prototype.$zeroPage = zeroPage;
 
 (async function() {
 	const siteInfo = await zeroPage.getSiteInfo();
 	store.commit("setSiteInfo", siteInfo);
+	route(app);
 	app.$eventBus.$emit("setSiteInfo", siteInfo);
 })();
 zeroPage.on("setSiteInfo", msg => {

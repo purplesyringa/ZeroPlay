@@ -93,8 +93,8 @@
 
 				// Wait for the reply
 				Game.onFrom(opponentAddress, `with-random/accept/${gameId}`, () => {
-					console.log("Opponent accepted");
 					// The user accepts to play with us
+					console.log("Opponent accepted");
 					playing = true;
 					this.$router.navigate(`play/${this.game}/with-random/${opponentAddress}/${gameId}`);
 					off();
@@ -107,10 +107,10 @@
 					lock.release();
 				}, 2000);
 				Game.onFrom(opponentAddress, `with-random/decline/${gameId}`, () => {
-					console.log("Opponent declined");
 					// The user doesn't want to play with us -- he has
 					// probably found another opponent while we were doing
 					// all this stuff.
+					console.log("Opponent accepted");
 					clearTimeout(to1);
 					lock.release();
 				});
@@ -118,12 +118,12 @@
 
 			// Listen for with-random/join
 			const offJoin = await Game.onBroadcastMe(`with-random/join/${this.game}`, async (opponentAddress, gameId) => {
-				console.log("Got join request from", opponentAddress);
 				// Looks like someone wants to join us.
+				console.log("Got join request from", opponentAddress);
 				if(playing) {
-					console.log("Playing");
 					// If we're already playing with someone, reply with
 					// decline
+					console.log("Decline -- already playing");
 					Game.sendTo(opponentAddress, `with-random/decline/${gameId}`);
 					return;
 				}

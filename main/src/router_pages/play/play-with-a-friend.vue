@@ -92,13 +92,16 @@
 				this.readyToPlay = true;
 
 				// Send a request for playing to the friend
+				console.log("Sending join request to", opponentAddress);
 				Game.sendTo(opponentAddress, `with-a-friend/join/${this.game}`);
 
 				// Listen to with-a-friend/join/${this.game}
+				console.log("Listening for with-a-friend/join");
 				const off = await Game.onFrom(opponentAddress, `with-a-friend/join/${this.game}`, () => {
 					off();
 
 					// It's join request -- accept it
+					console.log("Accepting join request");
 					const gameId = Math.random().toString(36).substr(2);
 					Game.sendTo(opponentAddress, `with-a-friend/accept-join/${this.game}`, gameId);
 
@@ -107,6 +110,7 @@
 				});
 
 				// Wait for this message from the opponent
+				console.log("Waiting for join acception");
 				const gameId = await Game.waitFrom(opponentAddress, `with-a-friend/accept-join/${this.game}`);
 
 				// The opponent agreed to start the game, so we agree as well

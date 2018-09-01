@@ -2,6 +2,8 @@
 	<div class="root">
 		<!-- Game list -->
 		<div class="games">
+			<h1>Welcome, {{username}}</h1>
+
 			<div class="game" @click="$router.navigate('play/chess')">
 				<img src="@/assets/chess.png" />
 				<h2>Chess</h2>
@@ -26,6 +28,15 @@
 		font-size: 0
 
 		background-color: #223
+
+	h1
+		font-size: 32px
+		color: #FFF
+		text-align: center
+
+		width: 100%
+		position: absolute
+		margin-top: -64px
 
 	.games
 		width: 100%
@@ -72,7 +83,16 @@
 </style>
 
 <script type="text/javascript">
+	import Users from "@/libs/users";
+
 	export default {
-		name: "play"
+		name: "play",
+
+		asyncComputed: {
+			async username() {
+				const authAddress = this.$store.state.siteInfo.auth_address;
+				return (await Users.addressToInfo(authAddress)).username;
+			}
+		}
 	};
 </script>

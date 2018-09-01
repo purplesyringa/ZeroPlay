@@ -53,4 +53,20 @@ export default new class Users {
 
 		return results[0].directory.replace("users/", "");
 	}
+
+	// Transform auth_address to an object of information about user
+	async addressToInfo(authAddress) {
+		const results = await zeroDB.query(`
+			SELECT * FROM json
+			WHERE directory = :directory
+		`, {
+			directory: `users/${authAddress}`
+		});
+
+		if(results.length === 0) {
+			throw new Error(`There is no user with address ${authAddress}`);
+		}
+
+		return results[0];
+	}
 };

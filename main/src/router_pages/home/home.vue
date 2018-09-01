@@ -2,7 +2,7 @@
 	<div class="root">
 		<!-- Header -->
 		<h1>
-			<span class="zero">Zer0</span>
+			<span class="zero">0</span>
 			<span class="p">P</span>
 			<span class="l">l</span>
 			<span class="a">a</span>

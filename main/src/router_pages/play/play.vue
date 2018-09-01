@@ -20,6 +20,7 @@
 		</div>
 
 		<a class="logout" @click="logout">Log out/choose another ID</a>
+		<a class="settings" @click="$router.navigate('settings')">Settings</a>
 	</div>
 </template>
 
@@ -40,7 +41,7 @@
 		position: absolute
 		margin-top: -64px
 
-	.logout
+	.logout, .settings
 		color: #88D
 		font-size: 20px
 		text-decoration: none
@@ -48,7 +49,10 @@
 
 		position: absolute
 		left: 16px
+	.logout
 		top: 16px
+	.settings
+		top: 48px
 
 	.games
 		width: 100%

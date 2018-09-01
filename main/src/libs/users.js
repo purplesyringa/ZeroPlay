@@ -74,4 +74,16 @@ export default new class Users {
 
 		return results[0];
 	}
+
+	async setInfo(info) {
+		const siteInfo = await zeroPage.getSiteInfo();
+		const authAddress = siteInfo.auth_address;
+
+		let data = JSON.parse(await zeroFS.readFile(`data/users/${authAddress}/data.json`));
+		Object.assign(data, info);
+		data = JSON.stringify(data, null, "\t");
+		await zeroFS.writeFile(`data/users/${authAddress}/data.json`, data);
+
+		await zeroPage.publish(`data/users/${authAddress}/content.json`);
+	}
 };

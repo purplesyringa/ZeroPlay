@@ -9,7 +9,7 @@
 		},
 		"users/.+/data.json": {
 			"to_table": [],
-			"to_json_table": ["username"]
+			"to_json_table": ["username", "ipmode"]
 		}
 	},
 	"tables": {

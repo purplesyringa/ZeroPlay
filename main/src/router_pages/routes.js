@@ -5,6 +5,7 @@ import PlayWithAFriend from "./play/play-with-a-friend.vue";
 import PlayWithRandom from "./play/play-with-random.vue";
 import TicTacToe from "./games/tic-tac-toe/tic-tac-toe.vue";
 import Chess from "./games/chess/chess.vue";
+import Settings from "./settings/settings.vue";
 
 export default vue => [
 	{
@@ -70,6 +71,13 @@ export default vue => [
 			vue.$router.currentParams.first = false;
 			vue.$router.currentParams.second = true;
 			vue.currentView = Chess;
+		}
+	},
+
+	{
+		path: "settings",
+		controller: () => {
+			vue.currentView = Settings;
 		}
 	}
 ];

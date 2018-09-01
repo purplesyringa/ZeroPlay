@@ -21,7 +21,12 @@ export default new class Users {
 		const siteInfo = await zeroPage.getSiteInfo();
 		const authAddress = siteInfo.auth_address;
 
-		return await zeroFS.fileExists(`data/users/${authAddress}/data.json`);
+		try {
+			await zeroFS.readFile(`data/users/${authAddress}/data.json`);
+			return true;
+		} catch(e) {
+			return false;
+		}
 	}
 
 	// Transform username to auth_address

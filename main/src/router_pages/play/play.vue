@@ -18,6 +18,8 @@
 		<div class="credits">
 			Game icons by <a href="https://www.iconfinder.com/quizanswers">Vlad Marin</a>
 		</div>
+
+		<a class="logout" @click="logout">Log out/choose another ID</a>
 	</div>
 </template>
 
@@ -37,6 +39,16 @@
 		width: 100%
 		position: absolute
 		margin-top: -64px
+
+	.logout
+		color: #88D
+		font-size: 20px
+		text-decoration: none
+		cursor: pointer
+
+		position: absolute
+		left: 16px
+		top: 16px
 
 	.games
 		width: 100%
@@ -84,6 +96,7 @@
 
 <script type="text/javascript">
 	import Users from "@/libs/users";
+	import {zeroPage, zeroAuth} from "@/zero";
 
 	export default {
 		name: "play",
@@ -92,6 +105,28 @@
 			async username() {
 				const authAddress = this.$store.state.siteInfo.auth_address;
 				return (await Users.addressToInfo(authAddress)).username;
+			}
+		},
+
+		async mounted() {
+			if(!(await Users.isRegistered())) {
+				this.$router.navigate("");
+			}
+		},
+
+		methods: {
+			logout() {
+				// We're not using ZeroAuth.requestAuth() because it won't
+				// work for logout
+				zeroPage.cmd("certSelect", {
+					accepted_domains: zeroAuth.acceptedDomains
+				});
+			}
+		},
+
+		watch: {
+			"$store.state.siteInfo.cert_user_id"(newValue) {
+				this.$router.navigate("");
 			}
 		}
 	};

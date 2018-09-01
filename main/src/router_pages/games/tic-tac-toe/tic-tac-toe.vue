@@ -3,6 +3,7 @@
 		<div class="container">
 			<div class="user user-left">
 				<div :class="my">{{my}}</div>
+				<div v-html="myIcon"></div>
 				<h2>{{myUsername}}</h2>
 				<h3>{{myCertUserId}}</h3>
 				<div class="turn" v-if="turn === 'me'">Your turn</div>
@@ -12,6 +13,7 @@
 				<div class="turn" v-if="turn === 'opponent'">Opponent's turn</div>
 				<h3>{{opponentCertUserId}}</h3>
 				<h2>{{opponentUsername}}</h2>
+				<div v-html="opponentIcon"></div>
 				<div :class="opponent">{{opponent}}</div>
 			</div>
 
@@ -145,6 +147,7 @@
 	import Users from "@/libs/users";
 	import Game from "@/libs/game";
 	import {zeroPage} from "@/zero";
+	import jdenticon from "jdenticon";
 
 	export default {
 		name: "tic-tac-toe",
@@ -178,12 +181,14 @@
 			const me = await Users.addressToInfo(myAddress);
 			this.myUsername = me.username;
 			this.myCertUserId = me.cert_user_id;
+			this.myIcon = jdenticon.toSvg(myAddress, 96);
 
 			// Show opponent info
 			const opponent = await Users.addressToInfo(opponentAddress);
 			this.opponentAddress = opponentAddress;
 			this.opponentUsername = opponent.username;
 			this.opponentCertUserId = opponent.cert_user_id;
+			this.opponentIcon = jdenticon.toSvg(opponentAddress, 96);
 
 			// Set current turn
 			if(this.$router.currentParams.first) {

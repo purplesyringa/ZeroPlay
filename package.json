@@ -149,6 +149,7 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "http-vue-loader": "https://github.com/imachug/http-vue-loader",
     "ifdef-loader": "^2.0.3",
+    "jdenticon": "^2.1.0",
     "jszip": "^3.1.5",
     "node-sass": "^4.9.0",
     "sass.js": "^0.10.9",

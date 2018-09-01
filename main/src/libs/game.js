@@ -17,8 +17,8 @@ export default new class Game {
 
 	// Wait for a message from address <address>
 	async waitFrom(address, cmd) {
-		return await new Promise(resolve => {
-			const off = this.onFrom(address, cmd, param => {
+		return await new Promise(async resolve => {
+			const off = await this.onFrom(address, cmd, param => {
 				resolve(param);
 				off();
 			});
@@ -29,7 +29,7 @@ export default new class Game {
 	async onFrom(address, cmd, f) {
 		const myAddress = (await zeroPage.getSiteInfo()).auth_address;
 
-		const handler = ({params: {hash, message: {to, inCmd, sendToCmd, sendToParam}, signed_by: from}}) => {
+		const handler = ({params: {hash, message: {to, cmd: inCmd, sendToCmd, sendToParam}, signed_by: from}}) => {
 			// All messages with command sendTo are valid
 			if(inCmd === "sendTo" && sendToCmd && to) {
 				zeroPage.cmd("peerValid", [hash]);

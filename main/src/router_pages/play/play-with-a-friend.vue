@@ -95,11 +95,12 @@
 				Game.sendTo(opponentAddress, `with-a-friend/join/${this.game}`);
 
 				// Listen to with-a-friend/join/${this.game}
-				const off = Game.onFrom(opponentAddress, `with-a-friend/join/${this.game}`, () => {
+				const off = await Game.onFrom(opponentAddress, `with-a-friend/join/${this.game}`, () => {
 					off();
 
 					// It's join request -- accept it
-					Game.sendTo(opponentAddress, `with-a-friend/accept-join/${this.game}`);
+					const gameId = Math.random().toString(36).substr(2);
+					Game.sendTo(opponentAddress, `with-a-friend/accept-join/${this.game}`, gameId);
 
 					// Start the game
 					this.$router.navigate(`play/${this.game}/with-a-friend/${opponentAddress}/${gameId}`);

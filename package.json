@@ -158,6 +158,7 @@
     "vue-hot-reload-api": "^2.2.4",
     "vue-template-compiler": "^2.5.16",
     "vueify": "^9.4.1",
+    "vuex": "^3.0.1",
     "webpack-bundle-analyzer": "^2.11.2",
     "zero-dev-lib": "^1.0.10"
   },

@@ -10,18 +10,34 @@ Vue.component("icon", Icon);
 
 Vue.prototype.$eventBus = new Vue();
 
-import root from "./vue_components/root.vue";
-var app = new Vue({
-	el: "#app",
-	render: h => h(root),
-	data: {
-		currentView: null,
+import Vuex, {mapState} from "vuex";
+Vue.use(Vuex);
+const store = new Vuex.Store({
+	state: {
 		siteInfo: {
 			settings: {
 				own: false
 			}
 		}
-	}
+	},
+	mutations: {
+		setSiteInfo(state, siteInfo) {
+			state.siteInfo = siteInfo;
+		}
+	},
+	computed: mapState([
+		"siteInfo"
+	])
+});
+
+import root from "./vue_components/root.vue";
+var app = new Vue({
+	el: "#app",
+	render: h => h(root),
+	data: {
+		currentView: null
+	},
+	store
 });
 
 import {route} from "./route.js";
@@ -33,9 +49,9 @@ Vue.prototype.$zeroPage = zeroPage;
 (async function() {
 	const siteInfo = await zeroPage.getSiteInfo();
 	app.$eventBus.$emit("setSiteInfo", siteInfo);
-	app.siteInfo = siteInfo;
+	store.commit("setSiteInfo", siteInfo);
 })();
 zeroPage.on("setSiteInfo", msg => {
 	app.$eventBus.$emit("setSiteInfo", msg.params);
-	app.siteInfo = msg.params;
+	store.commit("setSiteInfo", msg.params);
 });

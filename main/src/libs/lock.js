@@ -20,9 +20,8 @@ export default class Lock {
 
 	// Release the lock
 	release() {
-		this._callbacks.forEach(callback => {
-			setTimeout(callback, 0);
-		});
-		this._callbacks = [];
+		if(this._callbacks.length) {
+			this._callbacks.shift()();
+		}
 	}
 }

@@ -1,18 +1,58 @@
 import {zeroPage} from "@/zero";
+import Users from "./users";
 
 export default new class Game {
+	constructor() {
+		this._addressToIp = {};
+		this.ip = null;
+
+		this.init();
+	}
+	async init() {
+		const siteInfo = await zeroPage.getSiteInfo();
+		const info = await Users.addressToInfo(siteInfo.auth_address);
+
+		if(info.ipmode === "ipify") {
+			const serverInfo = await zeroPage.cmd("serverInfo");
+
+			this.ip = (
+				(await (await fetch("https://api.ipify.org")).text()) + ":" +
+				serverInfo.fileserver_port
+			);
+			this.onBroadcastMe("needIp", () => {
+				this.broadcast("setIp", this.ip);
+			});
+		}
+	}
+
 	// Send a message to address <address>
-	sendTo(address, cmd, param=null) {
-		zeroPage.cmd("peerBroadcast", {
-			message: {
-				cmd: "sendTo",
-				to: address,
-				sendToCmd: cmd,
-				sendToParam: param
-			},
-			immediate: false,
-			privatekey: false // Sign with user's private key
-		});
+	async sendTo(address, cmd, param=null) {
+		const ip = await this.getIpOf(address);
+
+		if(ip) {
+			zeroPage.cmd("peerSend", {
+				ip,
+				message: {
+					cmd: "sendTo",
+					to: address,
+					sendToCmd: cmd,
+					sendToParam: param
+				},
+				immediate: false,
+				privatekey: false // Sign with user's private key
+			});
+		} else {
+			zeroPage.cmd("peerBroadcast", {
+				message: {
+					cmd: "sendTo",
+					to: address,
+					sendToCmd: cmd,
+					sendToParam: param
+				},
+				immediate: false,
+				privatekey: false // Sign with user's private key
+			});
+		}
 	}
 
 	// Wait for a message from address <address>
@@ -125,5 +165,27 @@ export default new class Game {
 		return () => {
 			zeroPage.off("peerReceive", handler);
 		};
+	}
+
+
+	async getIpOf(address) {
+		// Cache
+		if(this._addressToIp.hasOwnProperty(address)) {
+			return this._addressToIp[address];
+		}
+
+		// Check broadcast
+		const info = await Users.addressToInfo(address);
+		if(info.ipmode === "broadcast") {
+			return null;
+		}
+
+		// Ask for IP
+		this._addressToIp[address] = null;
+		this.sendTo(address, "needIp");
+
+		// And wait for reply
+		const ip = await this.waitFrom(address, "setIp");
+		this._addressToIp[address] = ip;
 	}
 };

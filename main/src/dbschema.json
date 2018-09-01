@@ -19,10 +19,11 @@
 				["directory", "TEXT"],
 				["file_name", "TEXT"],
 				["cert_user_id", "TEXT"],
-				["username", "TEXT"]
+				["username", "TEXT"],
+				["ipmode", "TEXT"]
 			],
 			"indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
-			"schema_changed": 2
+			"schema_changed": 3
 		}
 	}
 }

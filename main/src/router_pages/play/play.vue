@@ -25,7 +25,7 @@
 		height: 100%
 		font-size: 0
 
-		background-color: #B12
+		background-color: #223
 
 	.games
 		width: 100%

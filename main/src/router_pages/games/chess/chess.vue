@@ -261,7 +261,7 @@
 			},
 
 			reportCheater(reason) {
-				zeroPage.alert("<b>Cheater found! Reason:</b> " + reason);
+				zeroPage.alert("<b>Cheater detected! Reason:</b> " + reason);
 			},
 
 			reportWin() {

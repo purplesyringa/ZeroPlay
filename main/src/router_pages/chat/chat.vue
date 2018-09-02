@@ -13,6 +13,7 @@
 						<div class="logo" v-html="message.icon" />
 						<div class="author" v-if="!message.me">{{message.username}}</div>
 						{{message.text}}
+						<div class="date">{{(new Date(message.date)).toLocaleString()}}</div>
 					</article>
 					<div class="clearfix" />
 				</template>
@@ -97,6 +98,10 @@
 				left: -64px - 16px
 				top: 0
 
+			.date
+				color: rgba(255, 255, 255, 0.5)
+				margin-top: 16px
+
 			&.right
 				float: right
 
@@ -155,7 +160,7 @@
 			const authAddress = this.$store.state.siteInfo.auth_address;
 			this.username = (await Users.addressToInfo(authAddress)).username;
 
-			this.off = await Game.onBroadcast("chat/messsage", this.handleMessage);
+			this.off = await Game.onBroadcast("chat/message", this.handleMessage.bind(this));
 
 			const myJsonId = await zeroDB.getJsonID(`users/${authAddress}/data.json`, 2);
 
@@ -168,6 +173,8 @@
 				FROM chat
 
 				LEFT JOIN json ON (chat.json_id = json.json_id)
+
+				ORDER BY chat.date ASC
 			`)).map(message => {
 				return {
 					certUserId: message.cert_user_id,
@@ -233,6 +240,10 @@
 					icon: jdenticon.toSvg(fromAddress, 64),
 					date: Date.now()
 				});
+
+				setTimeout(() => {
+					this.$refs.messages.scrollTop = 1000000;
+				}, 0);
 			}
 		}
 	};

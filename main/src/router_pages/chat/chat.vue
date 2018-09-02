@@ -12,7 +12,7 @@
 					<article :class="{right: message.me}" :ref="message.ref" :key="message.ref">
 						<div class="logo" v-html="message.icon" />
 						<div class="author" v-if="!message.me">{{message.username}}</div>
-						<div v-html="textToHtml(message.text)" />
+						<div v-html="message.html" />
 						<div class="date">
 							<a @click="typeRef(message)">{{(new Date(message.date)).toLocaleString()}}</a>
 						</div>
@@ -147,6 +147,8 @@
 	import jdenticon from "jdenticon";
 	import {zeroDB} from "@/zero";
 
+	let messageCache = {};
+
 	export default {
 		name: "chat",
 		data() {
@@ -155,13 +157,6 @@
 				messages: []
 			};
 		},
-
-		//asyncComputed: {
-		//	async username() {
-		//		const authAddress = this.$store.state.siteInfo.auth_address;
-		//		return (await Users.addressToInfo(authAddress)).username;
-		//	}
-		//},
 
 		async mounted() {
 			if(!(await Users.isRegistered())) {
@@ -175,8 +170,6 @@
 			this.off = await Game.onBroadcast("chat/message", this.handleMessage.bind(this));
 
 			this.myJsonId = await zeroDB.getJsonID(`users/${authAddress}/data.json`, 2);
-
-			this.messageCache = {};
 
 			this.messages = (await zeroDB.query(`
 				SELECT
@@ -195,6 +188,7 @@
 					username: message.username,
 					me: message.json_id === this.myJsonId,
 					text: message.text,
+					html: this.textToHtml(message.text),
 					icon: jdenticon.toSvg(message.directory.replace("users/", ""), 64),
 					auth_address: message.directory.replace("users/", ""),
 					date: message.date,
@@ -202,7 +196,7 @@
 				};
 			});
 			for(const message of this.messages) {
-				this.messageCache[message.ref] = message;
+				messageCache[message.ref] = message;
 			}
 
 			this.scroll();
@@ -233,15 +227,19 @@
 					username: this.username,
 					me: true,
 					text: this.message,
+					html: this.textToHtml(this.message),
 					icon: jdenticon.toSvg(this.$store.state.siteInfo.auth_address, 64),
 					auth_address: this.$store.state.siteInfo.auth_address,
 					date,
 					ref: `message_${this.$store.state.siteInfo.auth_address}_${date}`
 				};
 				this.messages.push(message);
-				this.messageCache[message.ref] = message;
+				messageCache[message.ref] = message;
 
-				Game.broadcast("chat/message", this.message);
+				Game.broadcast("chat/message", {
+					text: this.message,
+					date
+				});
 
 				zeroDB.insertRow(
 					`data/users/${this.$store.state.siteInfo.auth_address}/data.json`,
@@ -257,21 +255,21 @@
 				this.scroll();
 			},
 
-			async handleMessage(fromAddress, text) {
+			async handleMessage(fromAddress, {text, date}) {
 				const info = await Users.addressToInfo(fromAddress);
-				const date = Date.now();
 				const message = {
 					certUserId: info.cert_user_id,
 					username: info.username,
 					me: false,
 					text,
+					html: this.textToHtml(text),
 					icon: jdenticon.toSvg(fromAddress, 64),
 					auth_address: fromAddress,
 					date,
 					ref: `message_${fromAddress}_${date}`
 				};
 				this.messages.push(message);
-				this.messageCache[message.ref] = message;
+				messageCache[message.ref] = message;
 
 				this.scroll();
 			},
@@ -289,29 +287,31 @@
 					.replace(/\?!\[tc_([^\]]+)\]/g, (all, id) => {
 						const rnd = "submessage_" + Math.random().toString(36).substr(2);
 
-						(async () => {
-							const message = await this.getMessage(id);
-							if(message) {
-								document.getElementById(rnd).innerHTML = `
-									<div class="author">${message.username}</div>
-									${this.textToHtml(message.text)}
-								`;
-							} else {
-								document.getElementById(rnd).innerHTML = `
-									Error getting message ${id}
-								`;
-							}
+						setTimeout(() => {
+							(async () => {
+								const message = await this.getMessage(id);
+								if(message) {
+									document.getElementById(rnd).innerHTML = `
+										<div class="author">${message.username}</div>
+										${this.textToHtml(message.text)}
+									`;
+								} else {
+									document.getElementById(rnd).innerHTML = `
+										Error getting message ${id}
+									`;
+								}
 
-							this.scroll();
-						})();
+								this.scroll();
+							})();
+						}, 100);
 
 						return `<div class="submessage" id="${rnd}"></div>`;
 					});
 			},
 
 			async getMessage(id) {
-				if(this.messageCache[id]) {
-					return this.messageCache[id];
+				if(messageCache[id]) {
+					return messageCache[id];
 				}
 
 				let authAddress, date;
@@ -341,12 +341,13 @@
 						username: message.username,
 						me: message.json_id === this.myJsonId,
 						text: message.text,
+						html: this.textToHtml(message.text),
 						icon: jdenticon.toSvg(message.directory.replace("users/", ""), 64),
 						auth_address: message.directory.replace("users/", ""),
 						date: message.date,
 						ref: `message_${message.directory.replace("users/", "")}_${message.date}`
 					};
-					this.messageCache[message.ref] = message;
+					messageCache[message.ref] = message;
 					return message;
 				})[0];
 			},

@@ -1,20 +1,20 @@
 <template>
 	<div>
-		<div :class="['game-chat', {visible}]" ref="messages">
+		<div :class="['game-chat', {visible}]">
 			<h2>
 				<a @click="showChat">&times;</a>
 				Chat
 			</h2>
 
-			<template v-for="message, i in messages">
-				<div :class="['message', {'message-right': message.from === 'me'}]">
-					<h3>{{message.title}}</h3>
-					{{message.content}}
-				</div>
-				<div class="clearfix" />
-
-				<div v-if="i === messages.length - 1" class="padding" />
-			</template>
+			<div class="scrollable" ref="messages">
+				<template v-for="message, i in messages">
+					<div :class="['message', {'message-right': message.from === 'me'}]">
+						<h3>{{message.title}}</h3>
+						{{message.content}}
+					</div>
+					<div class="clearfix" />
+				</template>
+			</div>
 
 			<input @keyup.enter="send" v-model="message" />
 			<button @click="send">&gt;</button>
@@ -33,11 +33,16 @@
 		display: block
 		width: 384px
 		height: 100%
-		overflow-y: scroll
 
 		padding: 16px
+		padding-right: 0
 		background-color: rgba(0, 0, 0, 0.2)
 		color: #FFF
+
+	.scrollable
+		overflow-y: auto
+		height: calc(100% - 64px - 32px)
+		padding-right: 16px
 
 	h2
 		font-weight: normal
@@ -65,9 +70,6 @@
 
 	.clearfix
 		clear: both
-
-	.padding
-		margin-bottom: 64px
 
 	input
 		position: fixed

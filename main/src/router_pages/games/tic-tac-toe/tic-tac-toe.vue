@@ -72,7 +72,8 @@
 			color: #6DB
 
 	table
-		margin: 32px 256px
+		margin: 32px 0
+		table-layout: fixed
 
 		td
 			width: 68px
@@ -120,13 +121,13 @@
 
 
 		&.user-left
-			left: -128px
+			left: -384px
 			top: 0
 			text-align: right
 			margin-left: 0
 
 		&.user-right
-			right: -128px
+			right: -384px
 			bottom: 0
 			text-align: left
 			margin-right: 0
@@ -143,6 +144,15 @@
 		color: #FFF
 		text-decoration: underline
 		cursor: pointer
+
+
+	@media only screen and (max-width: 1000px)
+		.user
+			width: 192px
+			&.user-left
+				left: -256px
+			&.user-right
+				right: -256px
 </style>
 
 <script type="text/javascript">

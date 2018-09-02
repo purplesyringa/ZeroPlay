@@ -42,7 +42,7 @@
 				</template>
 			</main>
 
-			<input placeholder="Type here" @keyup.enter="submit" v-model="message" />
+			<autosize-textarea v-model="message" placeholder="Type here" @keyup.native.enter="submit" />
 		</div>
 	</div>
 </template>
@@ -69,6 +69,9 @@
 			max-width: 100%
 			height: 100%
 			margin: 0 auto
+
+			display: flex
+			flex-direction: column
 
 		header
 			padding: 16px 0
@@ -99,11 +102,12 @@
 
 
 		main
-			height: calc(100% - 64px - 48px)
 			background-color: rgba(0, 0, 0, 0.2)
 
 			overflow-x: hidden
 			overflow-y: scroll
+
+			flex: 1
 
 			&::-webkit-scrollbar
 				background-color: rgba(185, 185, 185, 0.2)
@@ -183,15 +187,18 @@
 		.clearfix
 			clear: both
 
-		input
+		textarea
 			width: 100%
 			padding: 16px
 			font-size: 16px
-			height: 48px
+			height: 56px
+			resize: none
 
 			background-color: rgba(0, 0, 0, 0.5)
 			box-shadow: 0 -4px 4px rgba(0, 0, 0, 0.1)
 			color: #FFF
+
+			transition: none
 </style>
 
 <script type="text/javascript">
@@ -201,8 +208,10 @@
 	import {zeroPage, zeroDB} from "@/zero";
 	import marked from "marked";
 	import "vue-awesome/icons/share-alt";
+	import autosize from "autosize";
 
 	let messageCache = {};
+	//import hljs from "hljs";
 
 	export default {
 		name: "chat",
@@ -290,7 +299,11 @@
 		},
 
 		methods: {
-			async submit() {
+			async submit(e) {
+				if(e.shiftKey) {
+					return;
+				}
+
 				this.message = this.message.trim();
 				if(!this.message) {
 					return;
@@ -372,7 +385,15 @@
 			},
 
 			textToHtml(text) {
-				return marked(text)
+				return marked(text, {
+					highlight: (code, lang) => {
+						try {
+							return lang ? hljs.highlight(lang, code).value : hljs.highlightAuto(code).value;
+						} catch(e) {
+							return hljs.highlightAuto(code).value;
+						}
+					},
+				})
 					.replace(/\?!\[tc_([^\]]+)\]/g, (all, id) => {
 						const rnd = "submessage_" + Math.random().toString(36).substr(2);
 
@@ -489,6 +510,23 @@
 					this.sendTyping(true);
 				} else if(oldValue && !newValue) {
 					this.sendTyping(false);
+				}
+			}
+		},
+
+		components: {
+			"autosize-textarea": {
+				props: ["handle-change", "value"],
+				template: `<textarea @input="input" v-model="value"></textarea>`,
+				methods: {
+					input(e) {
+						this.value = this.$el.value;
+						this.$emit("input", this.value);
+					}
+				},
+				updated() {
+					this.$el.style.height = "";
+					autosize(this.$el);
 				}
 			}
 		}

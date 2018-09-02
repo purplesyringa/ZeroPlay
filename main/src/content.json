@@ -23,5 +23,6 @@
  "signs_required": 1,
  "title": "0Play Game Center",
  "translate": ["js/all.js"],
+ "viewport": "width=device-width, initial-scale=1",
  "zeronet_version": "0.6.0"
 }

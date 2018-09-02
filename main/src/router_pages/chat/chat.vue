@@ -9,7 +9,7 @@
 
 			<main ref="messages">
 				<template v-for="message in messages">
-					<article :class="{right: message.me}" :ref="message.ref">
+					<article :class="{right: message.me}" :ref="message.ref" :key="message.ref">
 						<div class="logo" v-html="message.icon" />
 						<div class="author" v-if="!message.me">{{message.username}}</div>
 						<div v-html="textToHtml(message.text)" />
@@ -175,6 +175,8 @@
 
 			this.myJsonId = await zeroDB.getJsonID(`users/${authAddress}/data.json`, 2);
 
+			this.messageCache = {};
+
 			this.messages = (await zeroDB.query(`
 				SELECT
 					chat.*,
@@ -198,6 +200,9 @@
 					ref: `message_${message.directory.replace("users/", "")}_${message.date}`
 				};
 			});
+			for(const message of this.messages) {
+				this.messageCache[message.ref] = message;
+			}
 
 			this.scroll();
 
@@ -222,7 +227,7 @@
 				}
 
 				const date = Date.now();
-				this.messages.push({
+				const message = {
 					certUserId: this.$store.state.siteInfo.cert_user_id,
 					username: this.username,
 					me: true,
@@ -231,7 +236,9 @@
 					auth_address: this.$store.state.siteInfo.auth_address,
 					date,
 					ref: `message_${this.$store.state.siteInfo.auth_address}_${date}`
-				});
+				};
+				this.messages.push(message);
+				this.messageCache[message.ref] = message;
 
 				Game.broadcast("chat/message", this.message);
 
@@ -252,7 +259,7 @@
 			async handleMessage(fromAddress, text) {
 				const info = await Users.addressToInfo(fromAddress);
 				const date = Date.now();
-				this.messages.push({
+				const message = {
 					certUserId: info.cert_user_id,
 					username: info.username,
 					me: false,
@@ -261,7 +268,9 @@
 					auth_address: fromAddress,
 					date,
 					ref: `message_${fromAddress}_${date}`
-				});
+				};
+				this.messages.push(message);
+				this.messageCache[message.ref] = message;
 
 				this.scroll();
 			},
@@ -281,10 +290,16 @@
 
 						(async () => {
 							const message = await this.getMessage(id);
-							document.getElementById(rnd).innerHTML = `
-								<div class="author">${message.username}</div>
-								${this.textToHtml(message.text)}
-							`;
+							if(message) {
+								document.getElementById(rnd).innerHTML = `
+									<div class="author">${message.username}</div>
+									${this.textToHtml(message.text)}
+								`;
+							} else {
+								document.getElementById(rnd).innerHTML = `
+									Error getting message ${id}
+								`;
+							}
 
 							this.scroll();
 						})();
@@ -294,7 +309,16 @@
 			},
 
 			async getMessage(id) {
-				const [authAddress, date] = id.split("message_")[1].split("_");
+				if(this.messageCache[id]) {
+					return this.messageCache[id];
+				}
+
+				let authAddress, date;
+				try {
+					[authAddress, date] = id.split("message_")[1].split("_");
+				} catch(e) {
+					return null;
+				}
 
 				return (await zeroDB.query(`
 					SELECT
@@ -311,7 +335,7 @@
 					directory: `users/${authAddress}`,
 					date: parseInt(date)
 				})).map(message => {
-					return {
+					message = {
 						certUserId: message.cert_user_id,
 						username: message.username,
 						me: message.json_id === this.myJsonId,
@@ -321,6 +345,8 @@
 						date: message.date,
 						ref: `message_${message.directory.replace("users/", "")}_${message.date}`
 					};
+					this.messageCache[message.ref] = message;
+					return message;
 				})[0];
 			},
 

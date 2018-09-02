@@ -51,7 +51,8 @@
 <style lang="sass" scoped>
 	.root
 		height: 100%
-		background-color: #223
+		width: calc(100% - 384px)
+		position: relative
 	.container
 		position: absolute
 		left: 50%
@@ -134,6 +135,10 @@
 		color: #FFF
 		text-decoration: underline
 		cursor: pointer
+
+	@media only screen and (max-width: 1200px)
+		.root
+			width: 100%
 </style>
 
 <script type="text/javascript">

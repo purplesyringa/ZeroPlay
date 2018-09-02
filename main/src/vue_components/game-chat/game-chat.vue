@@ -1,19 +1,26 @@
 <template>
-	<div class="game-chat" ref="messages">
-		<h2>Chat</h2>
+	<div>
+		<div :class="['game-chat', {visible}]" ref="messages">
+			<h2>
+				<a @click="showChat">&times;</a>
+				Chat
+			</h2>
 
-		<template v-for="message, i in messages">
-			<div :class="['message', {'message-right': message.from === 'me'}]">
-				<h3>{{message.title}}</h3>
-				{{message.content}}
-			</div>
-			<div class="clearfix" />
+			<template v-for="message, i in messages">
+				<div :class="['message', {'message-right': message.from === 'me'}]">
+					<h3>{{message.title}}</h3>
+					{{message.content}}
+				</div>
+				<div class="clearfix" />
 
-			<div v-if="i === messages.length - 1" class="padding" />
-		</template>
+				<div v-if="i === messages.length - 1" class="padding" />
+			</template>
 
-		<input @keyup.enter="send" v-model="message" />
-		<button @click="send">&gt;</button>
+			<input @keyup.enter="send" v-model="message" />
+			<button @click="send">&gt;</button>
+		</div>
+
+		<div class="open" @click="showChat">CHAT</div>
 	</div>
 </template>
 
@@ -35,6 +42,9 @@
 	h2
 		font-weight: normal
 		font-size: 24px
+
+		a
+			display: none
 
 	.message
 		margin: 8px 0
@@ -72,6 +82,42 @@
 		width: 64px
 
 		background-color: #DB6
+
+	.open
+		display: none
+
+	@media only screen and (max-width: 1200px)
+		.game-chat, input, button
+			display: none
+
+		h2 a
+			display: inline
+			color: #DB6
+			cursor: pointer
+
+		.open
+			display: block
+
+			position: fixed
+			right: 0
+			top: 50%
+			transform: translateY(-50%) rotateZ(-90deg) translateY(50%)
+
+			color: #FFF
+			background-color: rgba(0, 0, 0, 0.2)
+			padding: 8px
+
+		.game-chat.visible
+			display: block
+			width: 100%
+			background-color: rgba(0, 0, 0, 0.95)
+		.game-chat.visible input
+			display: block
+			width: calc(100% - 64px)
+		.game-chat.visible button
+			display: block
+		.game-chat.visible + .open
+			display: none
 </style>
 
 <script type="text/javascript">
@@ -85,7 +131,8 @@
 			return {
 				message: "",
 				messages: [],
-				myNickname: ""
+				myNickname: "",
+				visible: false
 			};
 		},
 
@@ -145,6 +192,13 @@
 				setTimeout(() => {
 					this.$refs.messages.scrollTop = 10000000;
 				}, 0);
+			},
+
+			showChat() {
+				if(document.body.offsetWidth <= 1200) {
+					// Mobile mode
+					this.visible = !this.visible;
+				}
 			}
 		}
 	};

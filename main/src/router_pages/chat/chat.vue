@@ -119,6 +119,7 @@
 
 			.submessage
 				padding: 16px
+				margin: 16px 0
 				background-color: rgba(0, 0, 0, 0.2)
 
 			article, .submessage

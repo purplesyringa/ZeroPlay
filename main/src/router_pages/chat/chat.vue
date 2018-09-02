@@ -171,6 +171,7 @@
 	import Game from "@/libs/game";
 	import jdenticon from "jdenticon";
 	import {zeroDB} from "@/zero";
+	import marked from "marked";
 
 	let messageCache = {};
 
@@ -336,11 +337,7 @@
 			},
 
 			textToHtml(text) {
-				return text
-					.replace(/&/g, "&amp;")
-					.replace(/</g, "&lt;")
-					.replace(/>/g, "&gt;")
-
+				return marked(text)
 					.replace(/\?!\[tc_([^\]]+)\]/g, (all, id) => {
 						const rnd = "submessage_" + Math.random().toString(36).substr(2);
 

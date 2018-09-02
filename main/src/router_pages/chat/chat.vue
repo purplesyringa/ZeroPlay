@@ -63,7 +63,15 @@
 			height: calc(100% - 64px - 48px)
 			background-color: rgba(0, 0, 0, 0.2)
 
+			overflow-x: hidden
 			overflow-y: scroll
+
+			&::-webkit-scrollbar
+				background-color: rgba(185, 185, 185, 0.2)
+				border-radius: 8px
+			&::-webkit-scrollbar-thumb
+				background-color: rgba(0, 0, 0, 0.5)
+				border-radius: 8px
 
 			article
 				display: inline-block

@@ -236,7 +236,9 @@
 				messageCache[message.ref] = message;
 			}
 
-			this.scroll();
+			setTimeout(() => {
+				this.$refs.messages.scrollTop = 1000000;
+			}, 0);
 
 			if(this.$router.currentParams.id) {
 				setTimeout(() => {

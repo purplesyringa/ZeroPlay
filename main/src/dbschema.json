@@ -8,7 +8,7 @@
 			"file_name": "data.json"
 		},
 		"users/.+/data.json": {
-			"to_table": [],
+			"to_table": ["chat"],
 			"to_json_table": ["username", "ipmode"]
 		}
 	},
@@ -24,6 +24,16 @@
 			],
 			"indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
 			"schema_changed": 3
+		},
+
+		"chat": {
+			"cols": [
+				["text", "TEXT"],
+				["date", "INTEGER"],
+				["json_id", "INTEGER"]
+			],
+			"indexes": [],
+			"schema_changed": 1
 		}
 	}
 }

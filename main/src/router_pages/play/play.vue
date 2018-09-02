@@ -13,10 +13,15 @@
 				<img src="@/assets/tic-tac-toe.png" />
 				<h2>Tic Tac Toe</h2>
 			</div>
+
+			<div class="game" @click="$router.navigate('chat')">
+				<img src="@/assets/chat.png" />
+				<h2>Chat</h2>
+			</div>
 		</div>
 
 		<div class="credits">
-			Game icons by <a href="https://www.iconfinder.com/quizanswers">Vlad Marin</a>
+			Game icons by <a href="https://www.iconfinder.com/quizanswers">Vlad Marin</a>, chat icon by <a href="https://www.iconfinder.com/dinosoftlabs">Dinosoft Labs</a>
 		</div>
 
 		<a class="logout" @click="logout">Log out/choose another ID</a>

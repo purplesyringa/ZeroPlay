@@ -6,6 +6,7 @@ import PlayWithRandom from "./play/play-with-random.vue";
 import TicTacToe from "./games/tic-tac-toe/tic-tac-toe.vue";
 import Chess from "./games/chess/chess.vue";
 import Settings from "./settings/settings.vue";
+import Chat from "./chat/chat.vue";
 
 export default vue => [
 	{
@@ -78,6 +79,12 @@ export default vue => [
 		path: "settings",
 		controller: () => {
 			vue.currentView = Settings;
+		}
+	},
+	{
+		path: "chat",
+		controller: () => {
+			vue.currentView = Chat;
 		}
 	}
 ];

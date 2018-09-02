@@ -5,6 +5,16 @@
 		<div class="middle">
 			<header>
 				0Play Chat
+
+				<div :class="['follow', {following}]" @click="follow">
+					<icon name="share-alt" />
+					<template v-if="following">
+						Following
+					</template>
+					<template v-else>
+						Follow
+					</template>
+				</div>
 			</header>
 
 			<main ref="messages">
@@ -65,10 +75,28 @@
 			text-align: center
 			font-size: 24px
 			height: 64px
+			position: relative
 
 			background-color: rgba(0, 0, 0, 0.5)
 			box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1)
 			color: #DB6
+
+			.follow
+				padding: 8px 16px
+				background-color: rgba(0, 255, 255, 0.2)
+				cursor: pointer
+				border-radius: 8px
+
+				position: absolute
+				top: 14px
+				right: 16px
+
+				color: #FFF
+				font-size: 16px
+
+				&.following
+					background-color: rgba(255, 127, 0, 0.2)
+
 
 		main
 			height: calc(100% - 64px - 48px)
@@ -170,8 +198,9 @@
 	import Users from "@/libs/users";
 	import Game from "@/libs/game";
 	import jdenticon from "jdenticon";
-	import {zeroDB} from "@/zero";
+	import {zeroPage, zeroDB} from "@/zero";
 	import marked from "marked";
+	import "vue-awesome/icons/share-alt";
 
 	let messageCache = {};
 
@@ -184,7 +213,8 @@
 				typing: false,
 				currentlyTyping: [],
 				lastPing: {},
-				username: ""
+				username: "",
+				following: false
 			};
 		},
 
@@ -193,6 +223,9 @@
 				this.$router.navigate("");
 				return;
 			}
+
+			const feedList = await zeroPage.cmd("feedListFollow");
+			this.following = !!feedList.Chat;
 
 			const authAddress = this.$store.state.siteInfo.auth_address;
 			this.username = (await Users.addressToInfo(authAddress)).username;
@@ -425,6 +458,28 @@
 				this.typing = typing;
 				Game.broadcast("chat/ping", {typing, username: this.username});
 				this.scroll();
+			},
+
+			async follow() {
+				const feedList = await zeroPage.cmd("feedListFollow");
+				if(feedList.Chat) {
+					delete feedList.Chat;
+					this.following = false;
+				} else {
+					feedList.Chat = [`
+						SELECT
+							"@" || json.username || ": " || chat.text AS body,
+							chat.date AS date_added,
+							"comment" AS type,
+							"?/chat" AS url,
+							"0Play Chat" AS title
+						FROM chat
+
+						LEFT JOIN json ON (chat.json_id = json.json_id)
+					`, []];
+					this.following = true;
+				}
+				await zeroPage.cmd("feedFollow", [feedList]);
 			}
 		},
 

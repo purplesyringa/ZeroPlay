@@ -221,6 +221,9 @@
 					return piece[0] === this.my && this.turn === "me";
 				}
 			});
+			if(this.my === "b") {
+				this.board.flip();
+			}
 		},
 		destroyed() {
 			if(this.off) {

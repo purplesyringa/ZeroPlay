@@ -43,6 +43,8 @@
 
 			<a @click="$router.navigate('play')">Play another game</a>
 		</div>
+
+		<game-chat />
 	</div>
 </template>
 

@@ -86,7 +86,7 @@
 				// User with address <opponentAddress> wants to play --
 				// what about playing with him?
 				const gameId = Math.random().toString(36).substr(2);
-				console.log("Sending join request");
+				console.log("Sending join request, gameId =", gameId);
 				Game.sendTo(opponentAddress, `with-random/join/${this.game}`, gameId);
 
 				// Wait for the reply
@@ -103,12 +103,12 @@
 				let to1 = setTimeout(() => {
 					console.log("Releasing lock after timeout")
 					lock.release();
-				}, 2000);
+				}, 10000);
 				Game.onFrom(opponentAddress, `with-random/decline/${gameId}`, () => {
 					// The user doesn't want to play with us -- he has
 					// probably found another opponent while we were doing
 					// all this stuff.
-					console.log("Opponent accepted");
+					console.log("Opponent declined");
 					clearTimeout(to1);
 					lock.release();
 				});

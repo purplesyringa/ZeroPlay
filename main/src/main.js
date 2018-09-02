@@ -13,6 +13,9 @@ Vue.use(AsyncComputed);
 import Icon from "vue-awesome/components/Icon.vue";
 Vue.component("icon", Icon);
 
+import GameChat from "./vue_components/game-chat/game-chat.vue";
+Vue.component("game-chat", GameChat);
+
 Vue.prototype.$eventBus = new Vue();
 
 import Vuex from "vuex";

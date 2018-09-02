@@ -186,6 +186,7 @@ export default new class Game {
 		}
 
 		// Check broadcast
+		this._addressToIp[address] = null;
 		const Users = require("./users").default;
 		const info = await Users.addressToInfo(address);
 		if(info.ipmode === "broadcast") {
@@ -193,7 +194,6 @@ export default new class Game {
 		}
 
 		// Ask for IP
-		this._addressToIp[address] = null;
 		this.sendTo(address, "needIp");
 
 		// And wait for reply

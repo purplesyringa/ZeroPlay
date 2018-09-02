@@ -68,10 +68,10 @@
 
 			&::-webkit-scrollbar
 				background-color: rgba(185, 185, 185, 0.2)
-				border-radius: 8px
+				border-radius: 4px
 			&::-webkit-scrollbar-thumb
 				background-color: rgba(0, 0, 0, 0.5)
-				border-radius: 8px
+				border-radius: 4px
 
 			article
 				display: inline-block
@@ -361,9 +361,16 @@
 			},
 
 			scroll() {
-				setTimeout(() => {
-					this.$refs.messages.scrollTop = 1000000;
-				}, 0);
+				const dist = Math.abs(
+					this.$refs.messages.scrollTop +
+					document.body.offsetHeight -
+					this.$refs.messages.scrollHeight
+				);
+				if(dist < 128) {
+					setTimeout(() => {
+						this.$refs.messages.scrollTop = 1000000;
+					}, 0);
+				}
 			}
 		}
 	};

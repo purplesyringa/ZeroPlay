@@ -1,6 +1,47 @@
 import {zeroPage, zeroFS, zeroDB} from "@/zero";
+import Game from "./game";
 
 export default new class Users {
+	constructor() {
+		this._userCache = {};
+
+		Game.onBroadcastMe("needUserInfo", async from => {
+			console.log("needUserInfo request");
+			const siteInfo = await zeroPage.getSiteInfo();
+			const authAddress = siteInfo.auth_address;
+			const results = await zeroDB.query(`
+				SELECT * FROM json
+				WHERE directory = :directory
+			`, {
+				directory: `users/${authAddress}`
+			});
+
+			console.log("Response", results[0]);
+			Game.sendTo(from, "myUserInfo", results[0]);
+		});
+
+		Game.onBroadcast("whoseUsername", async (from, {username, field}) => {
+			console.log("whoseUsername", username);
+
+			// Hacker
+			if(field !== "cert_user_id" && field !== "username") {
+				return;
+			}
+
+			const results = await zeroDB.query(`
+				SELECT * FROM json
+				WHERE ${field} = :value
+			`, {
+				value: username
+			});
+			if(results.length === 1) {
+				const address = results[0].directory.replace("users/", "");
+				console.log("->", address);
+				Game.sendTo(from, "myUsername", address);
+			}
+		});
+	}
+
 	// Register current user as <username>
 	async register(username) {
 		const siteInfo = await zeroPage.getSiteInfo();
@@ -31,36 +72,44 @@ export default new class Users {
 
 	// Transform username to auth_address
 	async userNameToAddress(username) {
-		let results;
-		if(username.indexOf("@") > -1) {
-			// It's likely cert_user_id
-			results = await zeroDB.query(`
-				SELECT * FROM json
-				WHERE cert_user_id = :cert_user_id
-			`, {
-				cert_user_id: username
-			});
-		} else {
-			// It's likely username
-			results = await zeroDB.query(`
-				SELECT * FROM json
-				WHERE username = :username
-			`, {
-				username
-			});
+		const field = (
+			username.indexOf("@") > -1 ?
+			"cert_user_id" : // It's likely cert_user_id
+			"username" // It's likely username
+		);
+
+		// First, try to get the results from the database
+		const results = await zeroDB.query(`
+			SELECT * FROM json
+			WHERE ${field} = :value
+		`, {
+			value: username
+		});
+		if(results.length > 0) {
+			return results[0].directory.replace("users/", "");
 		}
 
-		if(results.length === 0) {
+		Game.broadcast("whoseUsername", {username, field});
+		const address = await Promise.race([
+			Game.waitBroadcastMe("myUsername"),
+			new Promise(resolve => setTimeout(resolve, 10000))
+		]);
+
+		if(!address) {
 			throw new Error(`There is no user with username ${username}`);
-		} else if(results.length > 1) {
-			throw new Error(`There are several users with username ${username} -- use username@zeroid.bit to choose`);
 		}
 
-		return results[0].directory.replace("users/", "");
+		return address;
 	}
 
 	// Transform auth_address to an object of information about user
 	async addressToInfo(authAddress) {
+		// Try to search for user data in local cache
+		if(this._userCache[authAddress]) {
+			return this._userCache[authAddress];
+		}
+
+		// First, try to get the results from the database
 		const results = await zeroDB.query(`
 			SELECT * FROM json
 			WHERE directory = :directory
@@ -68,11 +117,28 @@ export default new class Users {
 			directory: `users/${authAddress}`
 		});
 
-		if(results.length === 0) {
+		if(results.length > 0) {
+			this._userCache[authAddress] = results[0];
+			return results[0];
+		}
+
+		// Ask by auth_address
+		if(!Game._addressToIp.hasOwnProperty(authAddress)) {
+			// Forbid recursive call
+			Game._addressToIp[authAddress] = null;
+		}
+		await Game.sendTo(authAddress, "needUserInfo");
+		const userInfo = await Promise.race([
+			Game.waitFrom(authAddress, "myUserInfo"),
+			new Promise(resolve => setTimeout(resolve, 10000))
+		]);
+
+		if(!userInfo) {
 			throw new Error(`There is no user with address ${authAddress}`);
 		}
 
-		return results[0];
+		this._userCache[authAddress] = userInfo;
+		return userInfo;
 	}
 
 	async setInfo(info) {

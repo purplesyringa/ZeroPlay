@@ -1,14 +1,15 @@
 import {zeroPage} from "@/zero";
-import Users from "./users";
 
 export default new class Game {
 	constructor() {
 		this._addressToIp = {};
 		this.ip = null;
 
-		this.init();
+		setTimeout(() => this.init(), 0);
 	}
 	async init() {
+		const Users = require("./users").default;
+
 		const siteInfo = await zeroPage.getSiteInfo();
 		const info = await Users.addressToInfo(siteInfo.auth_address);
 
@@ -137,6 +138,16 @@ export default new class Game {
 		};
 	}
 
+	// Wait for a message from everyone to me
+	async waitBroadcastMe(cmd) {
+		return await new Promise(async resolve => {
+			const off = await this.onBroadcastMe(cmd, (from, param) => {
+				resolve(param);
+				off();
+			});
+		});
+	}
+
 	// Listen to messages from everyone to me
 	async onBroadcastMe(cmd, f) {
 		const myAddress = (await zeroPage.getSiteInfo()).auth_address;
@@ -175,6 +186,7 @@ export default new class Game {
 		}
 
 		// Check broadcast
+		const Users = require("./users").default;
 		const info = await Users.addressToInfo(address);
 		if(info.ipmode === "broadcast") {
 			return null;

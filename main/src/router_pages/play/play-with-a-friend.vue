@@ -91,7 +91,13 @@
 
 				// Send a request for playing to the friend
 				console.log("Sending join request to", opponentAddress);
-				Game.sendTo(opponentAddress, `with-a-friend/join/${this.game}`);
+				try {
+					await Game.sendTo(opponentAddress, `with-a-friend/join/${this.game}`);
+				} catch(e) {
+					zeroPage.alert(`${this.username} (${opponentAddress}) is offline, try later.`);
+					this.$router.navigate(`play`);
+					return;
+				}
 
 				// Listen to with-a-friend/join/${this.game}
 				console.log("Listening for with-a-friend/join");

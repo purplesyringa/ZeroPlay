@@ -81,8 +81,15 @@ export default vue => [
 			vue.currentView = Settings;
 		}
 	},
+
 	{
 		path: "chat",
+		controller: () => {
+			vue.currentView = Chat;
+		}
+	},
+	{
+		path: "chat/:id",
 		controller: () => {
 			vue.currentView = Chat;
 		}

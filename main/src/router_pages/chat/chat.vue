@@ -19,6 +19,17 @@
 					</article>
 					<div class="clearfix" />
 				</template>
+
+				<template v-if="currentlyTyping.length === 1">
+					<div class="typing">
+						{{currentlyTyping[0].username}} is typing...
+					</div>
+				</template>
+				<template v-else-if="currentlyTyping.length > 1">
+					<div class="typing">
+						{{currentlyTyping.map(user => user.username).join(", ")}} are typing...
+					</div>
+				</template>
 			</main>
 
 			<input placeholder="Type here" @keyup.enter="submit" v-model="message" />
@@ -135,6 +146,12 @@
 					color: #DB6
 					margin-bottom: 16px
 
+			.typing
+				padding: 16px
+				margin-left: 64px + 16px
+				font-size: 16px
+				color: #DB6
+
 		.clearfix
 			clear: both
 
@@ -162,7 +179,11 @@
 		data() {
 			return {
 				message: "",
-				messages: []
+				messages: [],
+				typing: false,
+				currentlyTyping: [],
+				lastPing: {},
+				username: ""
 			};
 		},
 
@@ -176,6 +197,13 @@
 			this.username = (await Users.addressToInfo(authAddress)).username;
 
 			this.off = await Game.onBroadcast("chat/message", this.handleMessage.bind(this));
+			this.off2 = await Game.onBroadcast("chat/ping", this.handlePing.bind(this));
+			this.interval = setInterval(() => {
+				Game.broadcast("chat/ping", {typing: this.typing, username: this.username});
+				this.currentlyTyping = this.currentlyTyping.filter(({address}) => {
+					return Date.now() - this.lastPing[address] <= 10000;
+				});
+			}, 5000);
 
 			this.myJsonId = await zeroDB.getJsonID(`users/${authAddress}/data.json`, 2);
 
@@ -219,6 +247,9 @@
 		destroyed() {
 			if(this.off) {
 				this.off();
+			}
+			if(this.interval) {
+				clearInterval(this.interval);
 			}
 		},
 
@@ -280,6 +311,24 @@
 				messageCache[message.ref] = message;
 
 				this.scroll();
+			},
+
+			handlePing(fromAddress, {typing, username}) {
+				this.currentlyTyping = this.currentlyTyping.filter(({address}) => {
+					if(address === fromAddress) {
+						return typing;
+					} else {
+						return true;
+					}
+				});
+				if(typing && !this.currentlyTyping.find(user => user.address === fromAddress)) {
+					this.currentlyTyping.push({
+						address: fromAddress,
+						username
+					});
+				}
+				this.scroll();
+				this.lastPing[fromAddress] = Date.now();
 			},
 
 			typeRef(message) {
@@ -370,6 +419,22 @@
 					setTimeout(() => {
 						this.$refs.messages.scrollTop = 1000000;
 					}, 0);
+				}
+			},
+
+			sendTyping(typing) {
+				this.typing = typing;
+				Game.broadcast("chat/ping", {typing, username: this.username});
+				this.scroll();
+			}
+		},
+
+		watch: {
+			message(newValue, oldValue) {
+				if(newValue && !oldValue) {
+					this.sendTyping(true);
+				} else if(oldValue && !newValue) {
+					this.sendTyping(false);
 				}
 			}
 		}

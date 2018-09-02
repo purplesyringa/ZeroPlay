@@ -199,9 +199,7 @@
 				};
 			});
 
-			setTimeout(() => {
-				this.$refs.messages.scrollTop = 1000000;
-			}, 0);
+			this.scroll();
 
 			if(this.$router.currentParams.id) {
 				setTimeout(() => {
@@ -248,9 +246,7 @@
 				);
 
 				this.message = "";
-				setTimeout(() => {
-					this.$refs.messages.scrollTop = 1000000;
-				}, 0);
+				this.scroll();
 			},
 
 			async handleMessage(fromAddress, text) {
@@ -267,9 +263,7 @@
 					ref: `message_${fromAddress}_${date}`
 				});
 
-				setTimeout(() => {
-					this.$refs.messages.scrollTop = 1000000;
-				}, 0);
+				this.scroll();
 			},
 
 			typeRef(message) {
@@ -291,6 +285,8 @@
 								<div class="author">${message.username}</div>
 								${this.textToHtml(message.text)}
 							`;
+
+							this.scroll();
 						})();
 
 						return `<div class="submessage" id="${rnd}"></div>`;
@@ -326,6 +322,12 @@
 						ref: `message_${message.directory.replace("users/", "")}_${message.date}`
 					};
 				})[0];
+			},
+
+			scroll() {
+				setTimeout(() => {
+					this.$refs.messages.scrollTop = 1000000;
+				}, 0);
 			}
 		}
 	};

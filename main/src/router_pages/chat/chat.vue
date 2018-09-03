@@ -42,7 +42,7 @@
 				</template>
 			</main>
 
-			<autosize-textarea v-model="message" placeholder="Type here" @keyup.native.enter="submit" />
+			<autosize-textarea v-model="message" placeholder="Type here" @keydown.native.enter="submit" />
 		</div>
 	</div>
 </template>
@@ -178,6 +178,12 @@
 					color: #DB6
 					margin-bottom: 16px
 
+				pre
+					display: block
+					padding: 16px
+					background-color: rgba(0, 0, 0, 0.2)
+					font-family: monospace
+
 			.typing
 				padding: 16px
 				margin-left: 64px + 16px
@@ -209,9 +215,10 @@
 	import marked from "marked";
 	import "vue-awesome/icons/share-alt";
 	import autosize from "autosize";
+	import hljs from "highlightjs";
+	import "highlightjs/styles/railscasts.css";
 
 	let messageCache = {};
-	//import hljs from "hljs";
 
 	export default {
 		name: "chat",
@@ -304,6 +311,8 @@
 					return;
 				}
 
+				e.preventDefault();
+
 				this.message = this.message.trim();
 				if(!this.message) {
 					return;
@@ -339,7 +348,9 @@
 					}
 				);
 
-				this.message = "";
+				setTimeout(() => {
+					this.message = "";
+				}, 1);
 				this.scroll();
 			},
 
@@ -516,17 +527,24 @@
 
 		components: {
 			"autosize-textarea": {
-				props: ["handle-change", "value"],
-				template: `<textarea @input="input" v-model="value"></textarea>`,
+				props: ["value"],
+				template: `<textarea @input="input">{{value}}</textarea>`,
 				methods: {
 					input(e) {
 						this.value = this.$el.value;
 						this.$emit("input", this.value);
 					}
 				},
-				updated() {
-					this.$el.style.height = "";
+				mounted() {
 					autosize(this.$el);
+				},
+				watch: {
+					value(newValue) {
+						this.$el.value = newValue;
+						setTimeout(() => {
+							autosize.update(this.$el);
+						}, 1);
+					}
 				}
 			}
 		}

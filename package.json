@@ -150,7 +150,7 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "chess.js": "^0.10.2",
     "chessboardjs": "^0.0.1",
-    "hljs": "^6.2.3",
+    "highlightjs": "^9.10.0",
     "http-vue-loader": "https://github.com/imachug/http-vue-loader",
     "ifdef-loader": "^2.0.3",
     "jdenticon": "^2.1.0",

@@ -17,7 +17,7 @@
 				</div>
 			</header>
 
-			<main ref="messages">
+			<main ref="messages" @scroll="scrolled">
 				<template v-for="message in messages">
 					<article :class="{right: message.me}" :ref="message.ref" :key="message.ref">
 						<div class="logo" v-html="message.icon" />
@@ -27,7 +27,7 @@
 							<a @click="typeRef(message)">{{(new Date(message.date)).toLocaleString()}}</a>
 						</div>
 					</article>
-					<div class="clearfix" />
+					<div class="clearfix" :key="'clearfix_' + message.ref" />
 				</template>
 
 				<template v-if="currentlyTyping.length === 1">
@@ -220,6 +220,8 @@
 
 	let messageCache = {};
 
+	const PAGE_SIZE = 20;
+
 	export default {
 		name: "chat",
 		data() {
@@ -230,7 +232,9 @@
 				currentlyTyping: [],
 				lastPing: {},
 				username: "",
-				following: false
+				following: false,
+				lastMessageTimestamp: Infinity,
+				pageHeights: []
 			};
 		},
 
@@ -257,44 +261,9 @@
 
 			this.myJsonId = await zeroDB.getJsonID(`users/${authAddress}/data.json`, 2);
 
-			this.messages = (await zeroDB.query(`
-				SELECT
-					chat.*,
-					json.cert_user_id,
-					json.username,
-					json.directory
-				FROM chat
-
-				LEFT JOIN json ON (chat.json_id = json.json_id)
-
-				ORDER BY chat.date ASC
-			`)).map(message => {
-				return {
-					certUserId: message.cert_user_id,
-					username: message.username,
-					me: message.json_id === this.myJsonId,
-					text: message.text,
-					html: this.textToHtml(message.text),
-					icon: jdenticon.toSvg(message.directory.replace("users/", ""), 64),
-					auth_address: message.directory.replace("users/", ""),
-					date: message.date,
-					ref: `message_${message.directory.replace("users/", "")}_${message.date}`
-				};
+			this.$nextTick(() => {
+				this.queryOldMessages();
 			});
-			for(const message of this.messages) {
-				messageCache[message.ref] = message;
-			}
-
-			setTimeout(() => {
-				this.$refs.messages.scrollTop = 1000000;
-			}, 0);
-
-			if(this.$router.currentParams.id) {
-				setTimeout(() => {
-					const node = this.$refs[this.$router.currentParams.id][0];
-					node.scrollIntoView();
-				}, 500);
-			}
 		},
 		destroyed() {
 			if(this.off) {
@@ -512,6 +481,88 @@
 					this.following = true;
 				}
 				await zeroPage.cmd("feedFollow", [feedList]);
+			},
+
+			async queryOldMessages() {
+				const newMessages = (await zeroDB.query(`
+					SELECT
+						chat.*,
+						json.cert_user_id,
+						json.username,
+						json.directory
+					FROM chat
+
+					LEFT JOIN json ON (chat.json_id = json.json_id)
+
+					${this.lastMessageTimestamp === Infinity ? "" : "WHERE chat.date < :before"}
+
+					ORDER BY chat.date DESC
+
+					LIMIT ${PAGE_SIZE}
+				`, {
+					before: this.lastMessageTimestamp
+				})).reverse().map(message => {
+					return {
+						certUserId: message.cert_user_id,
+						username: message.username,
+						me: message.json_id === this.myJsonId,
+						text: message.text,
+						html: this.textToHtml(message.text),
+						icon: jdenticon.toSvg(message.directory.replace("users/", ""), 64),
+						auth_address: message.directory.replace("users/", ""),
+						date: message.date,
+						ref: `message_${message.directory.replace("users/", "")}_${message.date}`
+					};
+				});
+				for(const message of newMessages) {
+					messageCache[message.ref] = message;
+					if(message.date < this.lastMessageTimestamp) {
+						this.lastMessageTimestamp = message.date;
+					}
+				}
+
+				const oldScrollBottom = this.$refs.messages.scrollHeight - this.$refs.messages.scrollTop;
+				const oldScrollHeight = this.messages.length === 0 ? 0 : this.$refs.messages.scrollHeight;
+
+				this.messages = newMessages.concat(this.messages);
+
+				this.$nextTick(() => {
+					this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight - oldScrollBottom;
+					this.pageHeights.push(this.$refs.messages.scrollHeight - oldScrollHeight);
+
+					if(this.$router.currentParams.id) {
+						const node = this.$refs[this.$router.currentParams.id][0];
+						this.$router.navigate("chat");
+						node.scrollIntoView();
+					}
+				});
+			},
+
+			removeOldMessages() {
+				if(this.messages.length <= PAGE_SIZE) {
+					return;
+				}
+
+				this.messages = this.messages.slice(PAGE_SIZE);
+				const oldScrollTop = this.$refs.messages.scrollTop;
+
+				this.$nextTick(() => {
+					this.$refs.messages.scrollTop = oldScrollTop - this.pageHeights.pop();
+
+					if(this.$router.currentParams.id) {
+						const node = this.$refs[this.$router.currentParams.id][0];
+						this.$router.navigate("chat");
+						node.scrollIntoView();
+					}
+				});
+			},
+
+			scrolled() {
+				if(this.$refs.messages.scrollTop < 512) {
+					this.queryOldMessages();
+				} else if(this.pageHeights.slice(-1)[0] - this.$refs.messages.scrollTop < -512) {
+					this.removeOldMessages();
+				}
 			}
 		},
 

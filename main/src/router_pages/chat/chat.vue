@@ -43,7 +43,13 @@
 				<div class="typing" v-else />
 			</main>
 
-			<autosize-textarea v-model="message" placeholder="Type here" @keydown.native.enter="submit" />
+			<div>
+				<label class="like-button">
+					<icon name="image" class="icon" />
+					<input type="file" @change="insertImage" />
+				</label>
+				<autosize-textarea v-model="message" placeholder="Type here" @keydown.native.enter="submit" />
+			</div>
 		</div>
 	</div>
 </template>
@@ -214,12 +220,30 @@
 		.clearfix
 			clear: both
 
+
+		.like-button
+			display: inline-flex
+			width: 56px
+			height: 100%
+			vertical-align: top
+			justify-content: center
+			align-items: center
+
+			.icon
+				width: 24px
+				height: 24px
+
+		input[type=file]
+			position: fixed
+			left: -10000px
+
 		textarea
-			width: 100%
+			width: calc(100% - 56px)
 			padding: 16px
 			font-size: 16px
 			height: 56px
 			resize: none
+			vertical-align: top
 
 			background-color: rgba(0, 0, 0, 0.5)
 			box-shadow: 0 -4px 4px rgba(0, 0, 0, 0.1)
@@ -232,9 +256,10 @@
 	import Users from "@/libs/users";
 	import Game from "@/libs/game";
 	import jdenticon from "jdenticon";
-	import {zeroPage, zeroDB} from "@/zero";
+	import {zeroPage, zeroDB, zeroFS} from "@/zero";
 	import marked from "marked";
 	import "vue-awesome/icons/share-alt";
+	import "vue-awesome/icons/image";
 	import autosize from "autosize";
 	import hljs from "highlightjs";
 	import "highlightjs/styles/railscasts.css";
@@ -285,6 +310,8 @@
 			this.$nextTick(() => {
 				this.queryOldMessages();
 			});
+
+			window.loadImageChat = this.loadImageChat;
 		},
 		destroyed() {
 			if(this.off) {
@@ -293,6 +320,7 @@
 			if(this.interval) {
 				clearInterval(this.interval);
 			}
+			delete window.loadImageChat;
 		},
 
 		methods: {
@@ -389,7 +417,7 @@
 			},
 
 			async textToHtml(text) {
-				return await stringReplaceAsync(
+				const html = await stringReplaceAsync(
 					marked(text, {
 						highlight: (code, lang) => {
 							try {
@@ -397,7 +425,7 @@
 							} catch(e) {
 								return hljs.highlightAuto(code).value;
 							}
-						},
+						}
 					}),
 					/\?!\[tc_([^\]]+)\]/g,
 					async (all, id) => {
@@ -417,6 +445,26 @@
 							`;
 						}
 					});
+
+				const node = document.createElement("div");
+				node.innerHTML = html;
+				for(const image of node.querySelectorAll("img")) {
+					if(image.getAttribute("src").startsWith("data/users/")) {
+						// It's local file
+						if(await zeroFS.readFile(image.getAttribute("src"), "arraybuffer")) {
+							// Already downloaded
+							continue;
+						}
+					}
+
+					const loadImage = document.createElement("div");
+					loadImage.innerHTML = `
+						<button onclick="window.loadImageChat(event.target)" data-src="${image.src}">Load image ${image.alt}</button>
+					`;
+					image.parentNode.replaceChild(loadImage, image);
+				}
+
+				return node.innerHTML;
 			},
 
 			async getMessage(id) {
@@ -581,6 +629,67 @@
 				} else if(this.pageHeights.slice(-1)[0] - this.$refs.messages.scrollTop < -512) {
 					this.removeOldMessages();
 				}
+			},
+
+			async insertImage(e) {
+				const file = e.target.files[0];
+				if(!file) {
+					return;
+				}
+
+				let ext = file.name.split(".").slice(-1)[0];
+				if(ext.toLowerCase() === "gz") {
+					// e.g. tar.gz or json.gz
+					ext = file.name.split(".").slice(-2).join(".");
+				}
+				if(!["png", "gif", "jpeg", "jpg"].includes(ext)) {
+					zeroPage.alert("You can only upload PNG, GIF and JP[E]G files.");
+					return;
+				}
+
+				// File to ArrayBuffer
+				const arrayBuffer = await new Promise((resolve, reject) => {
+					const fr = new FileReader();
+					fr.onload = () => {
+						resolve(fr.result);
+					};
+					fr.onerror = e => {
+						reject(e);
+					};
+					fr.readAsArrayBuffer(file);
+				});
+
+				// Generate ID
+				let id = "";
+				id += Math.random().toString(36).substr(2);
+				id += Math.random().toString(36).substr(2);
+				id += Math.random().toString(36).substr(2);
+
+				// Write to disk
+				const directory = `data/users/${this.$store.state.siteInfo.auth_address}`;
+				await zeroFS.writeFile(
+					`${directory}/${id}.${ext}`,
+					arrayBuffer,
+					"arraybuffer"
+				);
+				await zeroPage.publish(
+					`${directory}/content.json`
+				);
+
+				// Insert
+				this.message += `![alt text](${directory}/${id}.${ext})`;
+			},
+
+			loadImageChat(target) {
+				const oldScrollHeight = this.$refs.messages.scrollHeight;
+
+				const img = document.createElement("img");
+				img.src = target.getAttribute("data-src");
+				target.parentNode.replaceChild(img, target);
+
+				setTimeout(() => {
+					this.pageHeights[this.pageHeights.length - 1] += this.$refs.messages.scrollHeight - oldScrollHeight;
+				}, 0);
 			}
 		},
 

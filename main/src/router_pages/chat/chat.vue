@@ -210,6 +210,21 @@
 				h1
 					font-size: 28px
 
+				img
+					max-width: 100%
+
+				code
+					padding: 8px
+					background-color: rgba(0, 0, 0, 0.2)
+					font-family: monospace
+
+				blockquote
+					margin-left: 0
+					border-left: 4px solid rgba(255, 255, 255, 0.2)
+					padding-left: 32px
+					padding-top: 0.1px
+					padding-bottom: 0.1px
+
 			.typing
 				padding: 16px
 				height: 64px

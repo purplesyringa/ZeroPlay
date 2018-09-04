@@ -43,7 +43,7 @@
 				<div class="typing" v-else />
 			</main>
 
-			<div>
+			<div class="input-container">
 				<label class="like-button">
 					<icon name="image" class="icon" />
 					<input type="file" @change="insertImage" />
@@ -236,35 +236,39 @@
 			clear: both
 
 
-		.like-button
-			display: inline-flex
-			width: 56px
-			height: 100%
-			vertical-align: top
-			justify-content: center
-			align-items: center
+		.input-container
+			display: flex
+			flex-direction: row
+			align-items: stretch
 
-			.icon
-				width: 24px
-				height: 24px
+			.like-button
+				display: inline-flex
+				width: 56px
+				vertical-align: top
+				justify-content: center
+				align-items: center
 
-		input[type=file]
-			position: fixed
-			left: -10000px
+				.icon
+					width: 24px
+					height: 24px
 
-		textarea
-			width: calc(100% - 56px)
-			padding: 16px
-			font-size: 16px
-			height: 56px
-			resize: none
-			vertical-align: top
+			input[type=file]
+				position: fixed
+				left: -10000px
 
-			background-color: rgba(0, 0, 0, 0.5)
-			box-shadow: 0 -4px 4px rgba(0, 0, 0, 0.1)
-			color: #FFF
+			textarea
+				width: calc(100% - 56px)
+				padding: 16px
+				font-size: 16px
+				height: 56px
+				resize: none
+				vertical-align: top
 
-			transition: none
+				background-color: rgba(0, 0, 0, 0.5)
+				box-shadow: 0 -4px 4px rgba(0, 0, 0, 0.1)
+				color: #FFF
+
+				transition: none
 </style>
 
 <script type="text/javascript">

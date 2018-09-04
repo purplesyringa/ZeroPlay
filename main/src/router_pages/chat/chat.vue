@@ -672,6 +672,9 @@
 					arrayBuffer,
 					"arraybuffer"
 				);
+				const contentJson = JSON.parse(await zeroFS.readFile(`${directory}/content.json`));
+				contentJson.optional = ".*[.]png|.*[.]gif|.*[.]jpeg|.*[.]jpg|.*[.]piecemap[.]msgpack";
+				await zeroFS.writeFile(`${directory}/content.json`, JSON.stringify(contentJson, null, 1));
 				await zeroPage.publish(
 					`${directory}/content.json`
 				);

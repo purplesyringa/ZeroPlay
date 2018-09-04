@@ -13,7 +13,8 @@
   },
   "permission_rules": {
    ".*": {
-    "files_allowed": "data.json|.*[.]png|.*[.]gif|.*[.]jpeg|.*[.]jpg",
+    "files_allowed": "data.json",
+    "files_allowed_optional": ".*[.]png|.*[.]gif|.*[.]jpeg|.*[.]jpg|.*[.]piecemap[.]msgpack",
     "max_size": 100000
    }
   },

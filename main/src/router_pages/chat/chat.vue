@@ -217,6 +217,7 @@
 	import autosize from "autosize";
 	import hljs from "highlightjs";
 	import "highlightjs/styles/railscasts.css";
+	import stringReplaceAsync from "string-replace-async";
 
 	let messageCache = {};
 
@@ -233,7 +234,6 @@
 				lastPing: {},
 				username: "",
 				following: false,
-				lastMessageTimestamp: Infinity,
 				pageHeights: []
 			};
 		},
@@ -293,7 +293,7 @@
 					username: this.username,
 					me: true,
 					text: this.message,
-					html: this.textToHtml(this.message),
+					html: await this.textToHtml(this.message),
 					icon: jdenticon.toSvg(this.$store.state.siteInfo.auth_address, 64),
 					auth_address: this.$store.state.siteInfo.auth_address,
 					date,
@@ -330,7 +330,7 @@
 					username: info.username,
 					me: false,
 					text,
-					html: this.textToHtml(text),
+					html: await this.textToHtml(text),
 					icon: jdenticon.toSvg(fromAddress, 64),
 					auth_address: fromAddress,
 					date,
@@ -364,38 +364,34 @@
 				this.message += `?![tc_${message.ref}]`;
 			},
 
-			textToHtml(text) {
-				return marked(text, {
-					highlight: (code, lang) => {
-						try {
-							return lang ? hljs.highlight(lang, code).value : hljs.highlightAuto(code).value;
-						} catch(e) {
-							return hljs.highlightAuto(code).value;
+			async textToHtml(text) {
+				return await stringReplaceAsync(
+					marked(text, {
+						highlight: (code, lang) => {
+							try {
+								return lang ? hljs.highlight(lang, code).value : hljs.highlightAuto(code).value;
+							} catch(e) {
+								return hljs.highlightAuto(code).value;
+							}
+						},
+					}),
+					/\?!\[tc_([^\]]+)\]/g,
+					async (all, id) => {
+						const message = await this.getMessage(id);
+						if(message) {
+							return `
+								<div class="submessage">
+									<div class="author">${message.username}</div>
+									${await this.textToHtml(message.text)}
+								</div>
+							`;
+						} else {
+							return `
+								<div class="submessage">
+									Error getting message ${id}
+								</div>
+							`;
 						}
-					},
-				})
-					.replace(/\?!\[tc_([^\]]+)\]/g, (all, id) => {
-						const rnd = "submessage_" + Math.random().toString(36).substr(2);
-
-						setTimeout(() => {
-							(async () => {
-								const message = await this.getMessage(id);
-								if(message) {
-									document.getElementById(rnd).innerHTML = `
-										<div class="author">${message.username}</div>
-										${this.textToHtml(message.text)}
-									`;
-								} else {
-									document.getElementById(rnd).innerHTML = `
-										Error getting message ${id}
-									`;
-								}
-
-								this.scroll();
-							})();
-						}, 100);
-
-						return `<div class="submessage" id="${rnd}"></div>`;
 					});
 			},
 
@@ -411,7 +407,7 @@
 					return null;
 				}
 
-				return (await zeroDB.query(`
+				return (await Promise.all((await zeroDB.query(`
 					SELECT
 						chat.*,
 						json.cert_user_id,
@@ -425,13 +421,13 @@
 				`, {
 					directory: `users/${authAddress}`,
 					date: parseInt(date)
-				})).map(message => {
+				})).map(async message => {
 					message = {
 						certUserId: message.cert_user_id,
 						username: message.username,
 						me: message.json_id === this.myJsonId,
 						text: message.text,
-						html: this.textToHtml(message.text),
+						html: await this.textToHtml(message.text),
 						icon: jdenticon.toSvg(message.directory.replace("users/", ""), 64),
 						auth_address: message.directory.replace("users/", ""),
 						date: message.date,
@@ -439,7 +435,7 @@
 					};
 					messageCache[message.ref] = message;
 					return message;
-				})[0];
+				})))[0];
 			},
 
 			scroll() {
@@ -484,7 +480,11 @@
 			},
 
 			async queryOldMessages() {
-				const newMessages = (await zeroDB.query(`
+				console.log("query");
+
+				const lastMessageTimestamp = this.messages.reduce((a, b) => Math.min(a, b.date), Infinity);
+
+				const newMessages = await Promise.all((await zeroDB.query(`
 					SELECT
 						chat.*,
 						json.cert_user_id,
@@ -494,32 +494,26 @@
 
 					LEFT JOIN json ON (chat.json_id = json.json_id)
 
-					${this.lastMessageTimestamp === Infinity ? "" : "WHERE chat.date < :before"}
+					${lastMessageTimestamp === Infinity ? "" : "WHERE chat.date < :before"}
 
 					ORDER BY chat.date DESC
 
 					LIMIT ${PAGE_SIZE}
 				`, {
-					before: this.lastMessageTimestamp
-				})).reverse().map(message => {
+					before: lastMessageTimestamp
+				})).reverse().map(async message => {
 					return {
 						certUserId: message.cert_user_id,
 						username: message.username,
 						me: message.json_id === this.myJsonId,
 						text: message.text,
-						html: this.textToHtml(message.text),
+						html: await this.textToHtml(message.text),
 						icon: jdenticon.toSvg(message.directory.replace("users/", ""), 64),
 						auth_address: message.directory.replace("users/", ""),
 						date: message.date,
 						ref: `message_${message.directory.replace("users/", "")}_${message.date}`
 					};
-				});
-				for(const message of newMessages) {
-					messageCache[message.ref] = message;
-					if(message.date < this.lastMessageTimestamp) {
-						this.lastMessageTimestamp = message.date;
-					}
-				}
+				}));
 
 				const oldScrollBottom = this.$refs.messages.scrollHeight - this.$refs.messages.scrollTop;
 				const oldScrollHeight = this.messages.length === 0 ? 0 : this.$refs.messages.scrollHeight;

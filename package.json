@@ -159,6 +159,7 @@
     "marked": "^0.5.0",
     "node-sass": "^4.9.0",
     "sass.js": "^0.10.9",
+    "string-replace-async": "^1.2.1",
     "vue": "^2.5.13",
     "vue-async-computed": "^3.3.1",
     "vue-awesome": "^3.0.0",

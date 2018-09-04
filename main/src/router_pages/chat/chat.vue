@@ -18,10 +18,10 @@
 			</header>
 
 			<main ref="messages" @scroll="scrolled">
-				<template v-for="message in messages">
-					<article :class="{right: message.me}" :ref="message.ref" :key="message.ref">
+				<template v-for="message in cMessages">
+					<article :class="{right: message.me, compact: message.compact, 'last-compact': message.lastCompact}" :ref="message.ref" :key="message.ref">
 						<div class="logo" v-html="message.icon" />
-						<div class="author" v-if="!message.me">{{message.username}}</div>
+						<div class="author" v-if="!message.me" @click="typeMenion(message)">{{message.username}}</div>
 						<div v-html="message.html" />
 						<div class="date">
 							<a @click="typeRef(message)">{{(new Date(message.date)).toLocaleString()}}</a>
@@ -148,6 +148,7 @@
 					top: 0
 
 				.date
+					display: none
 					color: rgba(255, 255, 255, 0.5)
 					margin-top: 16px
 					cursor: pointer
@@ -168,6 +169,18 @@
 						left: auto
 						right: -64px - 16px
 
+				&.compact
+					margin-top: -12px
+					.logo
+						display: none
+					&::before
+						display: none
+					.author
+						display: none
+				&.last-compact
+					.date
+						display: block
+
 			.submessage
 				padding: 16px
 				margin: 16px 0
@@ -177,6 +190,7 @@
 				.author
 					color: #DB6
 					margin-bottom: 16px
+					cursor: pointer
 
 				pre
 					display: block
@@ -367,6 +381,9 @@
 
 			typeRef(message) {
 				this.message += `?![tc_${message.ref}]`;
+			},
+			typeMenion(message) {
+				this.message += `@${message.username} `;
 			},
 
 			async textToHtml(text) {
@@ -572,6 +589,22 @@
 				} else if(oldValue && !newValue) {
 					this.sendTyping(false);
 				}
+			}
+		},
+
+		computed: {
+			cMessages() {
+				return this.messages
+					.map((message, i) => {
+						return Object.assign({
+							compact: i > 0 && message.auth_address === this.messages[i - 1].auth_address && message.date - this.messages[i - 1].date < 5 * 60 * 1000
+						}, message);
+					})
+					.map((message, i, messages) => {
+						return Object.assign({
+							lastCompact: i === messages.length - 1 || !messages[i + 1].compact
+						}, message);
+					});
 			}
 		},
 

@@ -40,6 +40,7 @@
 						{{currentlyTyping.map(user => user.username).join(", ")}} are typing...
 					</div>
 				</template>
+				<div class="typing" v-else />
 			</main>
 
 			<autosize-textarea v-model="message" placeholder="Type here" @keydown.native.enter="submit" />
@@ -205,6 +206,7 @@
 
 			.typing
 				padding: 16px
+				height: 64px
 				margin-left: 64px + 16px
 				font-size: 16px
 				color: #DB6

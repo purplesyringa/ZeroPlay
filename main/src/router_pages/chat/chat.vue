@@ -184,6 +184,11 @@
 					background-color: rgba(0, 0, 0, 0.2)
 					font-family: monospace
 
+				h2
+					font-size: 20px
+				h1
+					font-size: 28px
+
 			.typing
 				padding: 16px
 				margin-left: 64px + 16px

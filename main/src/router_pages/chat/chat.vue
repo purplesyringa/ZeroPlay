@@ -19,7 +19,7 @@
 
 			<main ref="messages" @scroll="scrolled">
 				<template v-for="message in cMessages">
-					<article :class="{right: message.me, compact: message.compact, 'last-compact': message.lastCompact}" :ref="message.ref" :key="message.ref">
+					<article :class="{right: message.me, compact: message.compact, 'last-compact': true}" :ref="message.ref" :key="message.ref">
 						<div class="logo" v-html="message.icon" />
 						<div class="author" v-if="!message.me" @click="typeMenion(message)">{{message.username}}</div>
 						<div v-html="message.html" />

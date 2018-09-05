@@ -436,6 +436,7 @@
 			},
 
 			async textToHtml(text) {
+				console.log("textToHtml()");
 				const html = await stringReplaceAsync(
 					marked(text, {
 						highlight: (code, lang) => {
@@ -448,6 +449,7 @@
 					}),
 					/\?!\[tc_([^\]]+)\]/g,
 					async (all, id) => {
+						console.log("Message quote", id);
 						const message = await this.getMessage(id);
 						if(message) {
 							return `
@@ -468,14 +470,18 @@
 				const node = document.createElement("div");
 				node.innerHTML = html;
 				for(const image of node.querySelectorAll("img")) {
+					console.log("Image", image.getAttribute("src"));
 					if(image.getAttribute("src").startsWith("data/users/")) {
 						// It's local file
-						if(await zeroFS.readFile(image.getAttribute("src"), "arraybuffer")) {
+						console.log("Reading", image.getAttribute("src"));
+						if((await zeroPage.cmd("siteInfo", [image.getAttribute("src")])).event) {
 							// Already downloaded
+							console.log("Already downloaded", image.getAttribute("src"));
 							continue;
 						}
 					}
 
+					console.log("Adding link", image.getAttribute("src"));
 					const loadImage = document.createElement("div");
 					loadImage.innerHTML = `
 						<button onclick="window.loadImageChat(event.target)" data-src="${image.src}">Load image ${image.alt}</button>

@@ -6,7 +6,9 @@
 					<template v-if="my === 'b'">&#9817;</template>
 					<template v-if="my === 'w'">&#9823;</template>
 				</div>
-				<div v-html="myIcon"></div>
+				<div>
+					<user-avatar :address="myAddress" :width="96" />
+				</div>
 				<h2>{{myUsername}}</h2>
 				<h3>{{myCertUserId}}</h3>
 				<div class="turn" v-if="turn === 'me'">Your turn</div>
@@ -16,7 +18,9 @@
 				<div class="turn" v-if="turn === 'opponent'">Opponent's turn</div>
 				<h3>{{opponentCertUserId}}</h3>
 				<h2>{{opponentUsername}}</h2>
-				<div v-html="opponentIcon"></div>
+				<div>
+					<user-avatar :address="opponentAddress" :width="96" />
+				</div>
 				<div :class="opponent">
 					<template v-if="opponent === 'b'">&#9817;</template>
 					<template v-if="opponent === 'w'">&#9823;</template>
@@ -145,7 +149,6 @@
 	import Users from "@/libs/users";
 	import Game from "@/libs/game";
 	import {zeroPage} from "@/zero";
-	import jdenticon from "jdenticon";
 	import Chess from "chess.js";
 	import ChessBoard from "chessboardjs";
 	import "chessboardjs/www/css/chessboard.css";
@@ -156,8 +159,10 @@
 			return {
 				chess: new Chess(),
 				board: null,
+				myAddress: "",
 				myUsername: "",
 				myCertUserId: "",
+				opponentAddress: "",
 				opponentUsername: "",
 				opponentCertUserId: "",
 				turn: "",
@@ -170,21 +175,19 @@
 		},
 
 		async mounted() {
-			const myAddress = this.$store.state.siteInfo.auth_address;
-			const opponentAddress = this.$router.currentParams.opponentAddress;
+			this.myAddress = this.$store.state.siteInfo.auth_address;
+			this.opponentAddress = this.$router.currentParams.opponentAddress;
 
 			// Show my info
-			const me = await Users.addressToInfo(myAddress);
+			const me = await Users.addressToInfo(this.myAddress);
 			this.myUsername = me.username;
 			this.myCertUserId = me.cert_user_id;
-			this.myIcon = jdenticon.toSvg(myAddress, 96);
 
 			// Show opponent info
-			const opponent = await Users.addressToInfo(opponentAddress);
-			this.opponentAddress = opponentAddress;
+			const opponent = await Users.addressToInfo(this.opponentAddress);
 			this.opponentUsername = opponent.username;
 			this.opponentCertUserId = opponent.cert_user_id;
-			this.opponentIcon = jdenticon.toSvg(opponentAddress, 96);
+			this.opponentIcon = jdenticon.toSvg(this.opponentAddress, 96);
 
 			// Set current turn
 			if(this.$router.currentParams.first) {

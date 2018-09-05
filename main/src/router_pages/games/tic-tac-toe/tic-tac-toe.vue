@@ -3,7 +3,9 @@
 		<div class="container">
 			<div class="user user-left">
 				<div :class="my">{{my}}</div>
-				<div v-html="myIcon"></div>
+				<div>
+					<user-avatar :address="myAddress" :width="96" />
+				</div>
 				<h2>{{myUsername}}</h2>
 				<h3>{{myCertUserId}}</h3>
 				<div class="turn" v-if="turn === 'me'">Your turn</div>
@@ -13,7 +15,9 @@
 				<div class="turn" v-if="turn === 'opponent'">Opponent's turn</div>
 				<h3>{{opponentCertUserId}}</h3>
 				<h2>{{opponentUsername}}</h2>
-				<div v-html="opponentIcon"></div>
+				<div>
+					<user-avatar :address="opponentAddress" :width="96" />
+				</div>
 				<div :class="opponent">{{opponent}}</div>
 			</div>
 
@@ -179,8 +183,10 @@
 
 			return {
 				field,
+				myAddress: "",
 				myUsername: "",
 				myCertUserId: "",
+				opponentAddress: "",
 				opponentUsername: "",
 				opponentCertUserId: "",
 				turn: "",
@@ -191,21 +197,18 @@
 		},
 
 		async mounted() {
-			const myAddress = this.$store.state.siteInfo.auth_address;
-			const opponentAddress = this.$router.currentParams.opponentAddress;
+			this.myAddress = this.$store.state.siteInfo.auth_address;
+			this.opponentAddress = this.$router.currentParams.opponentAddress;
 
 			// Show my info
-			const me = await Users.addressToInfo(myAddress);
+			const me = await Users.addressToInfo(this.myAddress);
 			this.myUsername = me.username;
 			this.myCertUserId = me.cert_user_id;
-			this.myIcon = jdenticon.toSvg(myAddress, 96);
 
 			// Show opponent info
-			const opponent = await Users.addressToInfo(opponentAddress);
-			this.opponentAddress = opponentAddress;
+			const opponent = await Users.addressToInfo(this.opponentAddress);
 			this.opponentUsername = opponent.username;
 			this.opponentCertUserId = opponent.cert_user_id;
-			this.opponentIcon = jdenticon.toSvg(opponentAddress, 96);
 
 			// Set current turn
 			if(this.$router.currentParams.first) {

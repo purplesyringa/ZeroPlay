@@ -16,6 +16,9 @@ Vue.component("icon", Icon);
 import GameChat from "./vue_components/game-chat/game-chat.vue";
 Vue.component("game-chat", GameChat);
 
+import UserAvatar from "./vue_components/user-avatar/user-avatar.vue";
+Vue.component("user-avatar", UserAvatar);
+
 Vue.prototype.$eventBus = new Vue();
 
 import Vuex from "vuex";

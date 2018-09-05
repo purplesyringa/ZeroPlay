@@ -20,7 +20,9 @@
 			<main ref="messages" @scroll="scrolled">
 				<template v-for="message in cMessages">
 					<article :class="{right: message.me, compact: message.compact, 'last-compact': true}" :ref="message.ref" :key="message.ref">
-						<div class="logo" v-html="message.icon" />
+						<div class="logo">
+							<user-avatar :address="message.auth_address" />
+						</div>
 						<div class="author" v-if="!message.me" @click="typeMenion(message)">{{message.username}}</div>
 						<div v-html="message.html" />
 						<div class="date">
@@ -274,7 +276,6 @@
 <script type="text/javascript">
 	import Users from "@/libs/users";
 	import Game from "@/libs/game";
-	import jdenticon from "jdenticon";
 	import {zeroPage, zeroDB, zeroFS} from "@/zero";
 	import marked from "marked";
 	import "vue-awesome/icons/share-alt";
@@ -362,7 +363,6 @@
 					me: true,
 					text: this.message,
 					html: await this.textToHtml(this.message),
-					icon: jdenticon.toSvg(this.$store.state.siteInfo.auth_address, 64),
 					auth_address: this.$store.state.siteInfo.auth_address,
 					date,
 					ref: `message_${this.$store.state.siteInfo.auth_address}_${date}`
@@ -399,7 +399,6 @@
 					me: false,
 					text,
 					html: await this.textToHtml(text),
-					icon: jdenticon.toSvg(fromAddress, 64),
 					auth_address: fromAddress,
 					date,
 					ref: `message_${fromAddress}_${date}`
@@ -525,7 +524,6 @@
 						me: message.json_id === this.myJsonId,
 						text: message.text,
 						html: await this.textToHtml(message.text),
-						icon: jdenticon.toSvg(message.directory.replace("users/", ""), 64),
 						auth_address: message.directory.replace("users/", ""),
 						date: message.date,
 						ref: `message_${message.directory.replace("users/", "")}_${message.date}`
@@ -605,7 +603,6 @@
 						me: message.json_id === this.myJsonId,
 						text: message.text,
 						html: await this.textToHtml(message.text),
-						icon: jdenticon.toSvg(message.directory.replace("users/", ""), 64),
 						auth_address: message.directory.replace("users/", ""),
 						date: message.date,
 						ref: `message_${message.directory.replace("users/", "")}_${message.date}`

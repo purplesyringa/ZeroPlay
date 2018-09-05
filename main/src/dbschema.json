@@ -9,7 +9,7 @@
 		},
 		"users/.+/data.json": {
 			"to_table": ["chat"],
-			"to_json_table": ["username", "ipmode"]
+			"to_json_table": ["username", "ipmode", "hasAvatar", "avatarExt"]
 		}
 	},
 	"tables": {
@@ -20,10 +20,12 @@
 				["file_name", "TEXT"],
 				["cert_user_id", "TEXT"],
 				["username", "TEXT"],
-				["ipmode", "TEXT"]
+				["ipmode", "TEXT"],
+				["hasAvatar", "INTEGER"],
+				["avatarExt", "TEXT"]
 			],
 			"indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
-			"schema_changed": 3
+			"schema_changed": 4
 		},
 
 		"chat": {

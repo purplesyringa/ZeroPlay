@@ -224,8 +224,16 @@
 					margin-left: 0
 					border-left: 4px solid rgba(255, 255, 255, 0.2)
 					padding-left: 32px
-					padding-top: 0.1px
-					padding-bottom: 0.1px
+					padding-top: 16px
+					padding-bottom: 16px
+
+				a
+					color: #CCF
+					text-decoration: none
+
+					&:hover
+						text-decoration: underline
+
 
 			.typing
 				padding: 16px

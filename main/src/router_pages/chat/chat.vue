@@ -25,9 +25,7 @@
 						</div>
 						<div class="author" v-if="!message.me" @click="typeMenion(message)">{{message.username}}</div>
 						<div v-html="message.html" />
-						<div class="date">
-							<a @click="typeRef(message)">{{(new Date(message.date)).toLocaleString()}}</a>
-						</div>
+						<a class="date" @click="typeRef(message)">{{(new Date(message.date)).toLocaleString()}}</a>
 					</article>
 					<div class="clearfix" :key="'clearfix_' + message.ref" />
 				</template>

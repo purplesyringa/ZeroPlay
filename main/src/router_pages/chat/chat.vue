@@ -127,6 +127,7 @@
 				display: inline-block
 				padding: 16px
 				margin: 16px 32px + 64px
+				max-width: calc(100% - #{(32px + 64px) * 2})
 				border-radius: 4px
 
 				position: relative

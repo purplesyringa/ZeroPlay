@@ -206,6 +206,10 @@
 					background-color: rgba(0, 0, 0, 0.2)
 					font-family: monospace
 
+					code
+						padding: 0
+						background-color: transparent
+
 				h2
 					font-size: 20px
 				h1

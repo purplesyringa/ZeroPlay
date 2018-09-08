@@ -15,7 +15,7 @@
    ".*": {
     "files_allowed": "data.json",
     "files_allowed_optional": ".*[.]png|.*[.]gif|.*[.]jpeg|.*[.]jpg|.*[.]piecemap[.]msgpack",
-    "max_size": 100000
+    "max_size": 400000
    }
   },
   "permissions": {}
